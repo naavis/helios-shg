@@ -5,24 +5,18 @@ import skimage.transform
 from numpy.polynomial import Polynomial
 
 
-def fit_poly_to_dark_line(data: np.ndarray) -> Polynomial:
-    x = np.arange(0, data.shape[1])
-    y = np.argmin(data, axis=0)
-    poly = np.polynomial.Polynomial.fit(x, y, 2)
-    return poly
-
-
-def plot_image_with_fit(data: np.ndarray, poly: Polynomial):
-    plt.imshow(data, cmap='gray')
-    plt.plot(*poly.linspace(data.shape[1]))
-    plt.show()
-
-
 def print_headers(input_file):
     header = input_file.getHeader()
     print('Found the following headers:')
     for header_key in header:
         print(f'\t{header_key}: {header[header_key]}')
+
+
+def fit_poly_to_dark_line(data: np.ndarray) -> Polynomial:
+    x = np.arange(0, data.shape[1])
+    y = np.argmin(data, axis=0)
+    poly = np.polynomial.Polynomial.fit(x, y, 2)
+    return poly
 
 
 def warp_function(cr: np.ndarray, curve: np.ndarray) -> np.ndarray:
