@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import skimage.transform
 from numpy.polynomial import Polynomial
+from numba import njit
 
 
 def print_headers(input_file):
@@ -35,6 +36,17 @@ def fix_image_curvature(image: np.ndarray, curve: np.ndarray) -> np.ndarray:
     return warped_image
 
 
+@njit
+def get_emission_line(image: np.ndarray, poly_curve: np.ndarray):
+    output = np.zeros_like(poly_curve)
+    for i in range(0, poly_curve.size):
+        x = poly_curve[i]
+        lower = int(np.floor(x))
+        delta = x - lower
+        output[i] = (1.0 - delta) * image[lower, i] + delta * image[lower + 1, i]
+    return output
+
+
 def main():
     input_file = Serfile(r'C:\Users\samul\Desktop\12_08_34\12_08_34.ser')
     print_headers(input_file)
@@ -45,13 +57,14 @@ def main():
     # Fit 2nd degree polynomial to dark emission line in reference frame
     poly = fit_poly_to_dark_line(ref_frame)
     _, poly_curve = poly.linspace(ref_frame.shape[1])
-    emission_row = int(poly_curve[0])
+    #emission_row = int(poly_curve[0])
 
     output_frame = np.ndarray((input_file.getLength(), ref_frame.shape[1]))
     for i in range(0, input_file.getLength()):
         image = input_file.readFrameAtPos(i)
-        warped_image = fix_image_curvature(image, poly_curve)
-        output_frame[i, :] = warped_image[emission_row, :]
+        #warped_image = fix_image_curvature(image, poly_curve)
+        #output_frame[i, :] = warped_image[emission_row, :]
+        output_frame[i, :] = get_emission_line(image, poly_curve)
     plt.imshow(output_frame, cmap='gray')
     plt.show()
 
