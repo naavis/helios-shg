@@ -19,16 +19,19 @@ def fit_poly_to_dark_line(data: np.ndarray) -> Polynomial:
     return poly
 
 
-def warp_function(cr: np.ndarray, curve: np.ndarray) -> np.ndarray:
+def warp_function(cr: np.ndarray, offset: np.ndarray) -> np.ndarray:
     output = cr.copy()
-    resized_curve = np.repeat(curve, int(output.shape[0] / curve.shape[0]))
-    output[:, 1] = cr[:, 1] + resized_curve - curve[0]
+    output[:, 1] += offset
     return output
 
 
 def fix_image_curvature(image: np.ndarray, curve: np.ndarray) -> np.ndarray:
+    # Explicitly defining the warped shape ensures all the input data fits in the new distortion-corrected image
     warped_shape = (image.shape[0] + int(curve[0] - curve.min()), image.shape[1])
-    warped_image = skimage.transform.warp(image, warp_function, {'curve': curve}, output_shape=warped_shape)
+    # The offset curve must be repeated to match the warp_function input data shape, and curve[0] is subtracted to keep
+    # the start of the emission line on the same row both in the input data and output data
+    offset = np.repeat(curve, warped_shape[0]) - curve[0]
+    warped_image = skimage.transform.warp(image, warp_function, {'offset': offset}, output_shape=warped_shape)
     return warped_image
 
 
