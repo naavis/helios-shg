@@ -20,7 +20,6 @@
 
 import numpy as np
 import copy
-from astropy.io import fits
 
 #########tests purpose#########
 import functools, time
@@ -111,7 +110,6 @@ class Serfile():
     Private :
     self._cursor :      current position of video frame.
     self._offset  :     number of Bytes from beginning of file
-    self._hdr_fits :    header of FIT file.
     self._currentFrame : numpy array containing frame at self._cursor
     self._width :       width of a frame
     self._height :      height of a frame
@@ -149,7 +147,6 @@ class Serfile():
             self.createNewHeader()
         self._cursor = 0
         self._currentFrame = np.array([])
-        self._hdr_fits = ""
 
     def dateFrameAtPos(self, n):
         return -1 if len(self._trail) == 0 or n > (self.getLength() - 1) else self._trail[n]
@@ -361,32 +358,6 @@ class Serfile():
             pass
         return self._cursor
 
-    def createFitsHeader(self):
-        hdr = fits.Header()
-        hdr['SIMPLE'] = 'T'
-        hdr['BITPIX'] = 32
-        hdr['NAXIS'] = 2
-        hdr['NAXIS1'] = self._header['ImageWidth']
-        hdr['NAXIS2'] = self._header['ImageHeight']
-        hdr['BZERO'] = 0
-        hdr['BSCALE'] = 1
-        hdr['BIN1'] = 1
-        hdr['BIN2'] = 1
-        hdr['EXPTIME'] = 0
-        return hdr
-
-    def saveFit(self, filename):
-        # TODO use of astropyio https://docs.astropy.org/en/stable/io/fits/
-        if not 'fit' in filename.split('.')[-1].lower():
-            filename += '.fit'
-        if self._hdr_fits == "":
-            self._hdr_fits = self.createFitsHeader()
-        if len(self._currentFrame) == 0:
-            self.read()
-        DiskHDU = fits.PrimaryHDU(self._currentFrame, header=self._hdr_fits)
-        DiskHDU.writeto(filename, overwrite=True)
-        return True, filename
-
     def nextFrame(self):
         """add one to cursor. return actual frame position. -1 if nothing can be done"""
         if self._cursor < self._length:
@@ -490,29 +461,6 @@ class Serfile():
             self._length = self._header.get('FrameCount')
             if self._header.get('ImageHeight') and self._header.get('ImageWidth'):
                 self._frameDimension = self._height * self._width
-
-    def createFitsHeaderFromFitsFile(fitsFile):
-        """read fits header and fill a new SER header with it
-
-        In : a string containing fits file to read
-
-        Out: header built.
-        """
-
-        hdul = fits.open(fitsFile)
-        self.createNewHeader()
-        self._updateHeader('DateTime', hdul[0].header['DATE'])
-        self._updateHeader('FileID', 'LUCAM-RECORDER')
-        self._updateHeader('ColorID', 0)
-        self._updateHeader('LittleEndian', 0)
-        self._updateHeader('ImageHeight', hdul[0].header['NAXIS2'])
-        self._updateHeader('ImageWidth', hdul[0].header['NAXIS1'])
-        self._updateHeader('PixelDepthPerPlane', hdul[0].header['BITPIX'] // 16)
-        self._updateHeader('FrameCount', 0)
-        self._updateHeader('Observer', hdul[0].header['OBSERVER'])
-        self._updateHeader('Instrument', "")
-        self._updateHeader('Telescope', hdul[0].header['EXPTIME'])
-        self._updateHeader('DateTimeUTC', hdul[0].header['DATE'])
 
     def addFrame(self, frame):
         """add frame, add one to length. If it is the first frame, set height and width and frame_dimension
