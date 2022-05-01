@@ -535,23 +535,13 @@ def extract_png(serfile):
     print("extracted %s frames" % (serfile.getLength()))
 
 
-@time_it
-def extract_fit(serfile):
-    for i in range(serfile.getLength()):
-        serfile.saveFit(sys.argv[2].split('.')[0] + str(i) + '.fit')
-        serfile.nextFrame()
-    print("extracted %s frames" % (serfile.getLength()))
-
-
 if __name__ == "__main__":
     # execute only if run as a script
     import sys
 
     print("usage : setfilesreader.py -f file.ser")
     extract_png_flag = False
-    extract_fit_flag = False
     save_png_flag = False
-    save_fit_flag = False
     new_ser_flag = True
     if len(sys.argv) == 3:
         print("file read : ", sys.argv[2])
@@ -562,7 +552,6 @@ if __name__ == "__main__":
         print('height', fichier_ser.getHeight())
         print('frame n°10', fichier_ser.readFrameAtPos(10))
         print('move to 100th frame', fichier_ser.setCurrentPosition(100))
-        print('saving fit', fichier_ser.saveFit("try_fit.fit"))
         print('saving png', fichier_ser.savePng("try_fit.png"))
         print('date of 150th frame', fichier_ser.dateFrameAtPos(150))
 
@@ -571,16 +560,8 @@ if __name__ == "__main__":
             fichier_ser.setCurrentPosition(n)
             fichier_ser.savePng(sys.argv[2].split('.')[0] + str(n) + '.png')
 
-        if save_fit_flag:
-            n = 800
-            fichier_ser.setCurrentPosition(n)
-            fichier_ser.saveFit(sys.argv[2].split('.')[0] + str(n) + '.fit')
-
         if extract_png_flag:  ##Long...
             extract_png(fichier_ser)
-
-        if extract_fit_flag:
-            extract_fit(fichier_ser)
 
     if new_ser_flag:
         serfile_ = Serfile("try_ser.ser", NEW=True)
