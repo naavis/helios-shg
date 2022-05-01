@@ -39,7 +39,10 @@ def get_emission_line(image: np.ndarray, poly_curve: np.ndarray) -> np.ndarray:
 
 
 def scale_correction(image: np.ndarray) -> np.ndarray:
-    scaling_ratio = image.sum(axis=1).std() / image.sum(axis=0).std()
+    sun_pixels = np.nonzero(1.0 * (image > 0.3 * image.max()))
+    vertical_range = sun_pixels[0].max() - sun_pixels[0].min()
+    horizontal_range = sun_pixels[1].max() - sun_pixels[1].min()
+    scaling_ratio = horizontal_range / vertical_range
     print(f"Scale correction: {scaling_ratio}")
     return skimage.transform.resize(image, (int(image.shape[0] * scaling_ratio), int(image.shape[1])))
 
