@@ -9,7 +9,7 @@ from numba import njit
 
 def print_headers(input_file):
     header = input_file.getHeader()
-    print('Found the following headers:')
+    print('SER file headers:')
     for header_key in header:
         print(f'\t{header_key}: {header[header_key]}')
 
