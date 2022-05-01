@@ -7,8 +7,7 @@ from numpy.polynomial import Polynomial
 from numba import njit
 
 
-def print_headers(input_file):
-    header = input_file.getHeader()
+def print_headers(header: dict):
     print('SER file headers:')
     for header_key in header:
         print(f'\t{header_key}: {header[header_key]}')
@@ -68,10 +67,13 @@ def tilt_correction(image: np.ndarray) -> np.ndarray:
 
 def main(args):
     input_file = Serfile(args[0])
-    print_headers(input_file)
+    ser_header = input_file.getHeader()
+    print_headers(ser_header)
 
     # Pick reference frame from middle of video
-    ref_frame = input_file.readFrameAtPos(1000)
+    ref_frame_index = int(ser_header['FrameCount'] / 2)
+    print(f"Using frame {ref_frame_index} as reference")
+    ref_frame = input_file.readFrameAtPos(ref_frame_index)
 
     # Fit 2nd degree polynomial to dark emission line in reference frame
     poly = fit_poly_to_dark_line(ref_frame)
