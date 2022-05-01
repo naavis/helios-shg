@@ -49,7 +49,7 @@ def scale_correction(image: np.ndarray) -> np.ndarray:
 
 def tilt_correction(image: np.ndarray) -> np.ndarray:
     # Limit fitting to areas with proper signal
-    rows_with_signal = image.max(axis=0) > (0.3 * image.max())
+    rows_with_signal = image.max(axis=1) > (0.3 * image.max())
     first_index = np.nonzero(rows_with_signal)[0][0]
     last_index = np.nonzero(rows_with_signal)[0][-1]
 
