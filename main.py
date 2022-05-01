@@ -15,9 +15,15 @@ def print_headers(input_file):
 
 
 def fit_poly_to_dark_line(data: np.ndarray) -> Polynomial:
-    x = np.arange(0, data.shape[1])
-    y = np.argmin(data, axis=0)
-    poly = np.polynomial.Polynomial.fit(x, y, 2)
+    # Limit polynomial fitting only to region with proper signal
+    columns_with_signal = data.max(axis=0) > (0.1 * data.max())
+    first_index = np.nonzero(columns_with_signal)[0][0]
+    last_index = np.nonzero(columns_with_signal)[0][-1]
+
+    x = np.arange(first_index, last_index)
+    y = np.argmin(data[:, first_index:last_index], axis=0)
+    poly = Polynomial.fit(x, y, 2)
+    print(f"Distortion coefficients: {poly}")
     return poly
 
 
@@ -50,6 +56,7 @@ def get_emission_line(image: np.ndarray, poly_curve: np.ndarray) -> np.ndarray:
 
 def scale_correction(image: np.ndarray) -> np.ndarray:
     scaling_ratio = image.sum(axis=1).std() / image.sum(axis=0).std()
+    print(f"Scale correction: {scaling_ratio}")
     return skimage.transform.resize(image, (int(image.shape[0] * scaling_ratio), int(image.shape[1])))
 
 
@@ -62,7 +69,7 @@ def main(args):
 
     # Fit 2nd degree polynomial to dark emission line in reference frame
     poly = fit_poly_to_dark_line(ref_frame)
-    _, poly_curve = poly.linspace(ref_frame.shape[1])
+    _, poly_curve = poly.linspace(ref_frame.shape[1], domain=[0, ref_frame.shape[1]])
     #emission_row = int(poly_curve[0])
 
     output_frame = np.ndarray((input_file.getLength(), ref_frame.shape[1]))
