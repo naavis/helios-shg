@@ -16,14 +16,14 @@ def print_headers(input_file):
 
 def fit_poly_to_dark_line(data: np.ndarray) -> Polynomial:
     # Limit polynomial fitting only to region with proper signal
-    columns_with_signal = data.max(axis=0) > (0.1 * data.max())
+    columns_with_signal = data.max(axis=0) > (0.3 * data.max())
     first_index = np.nonzero(columns_with_signal)[0][0]
     last_index = np.nonzero(columns_with_signal)[0][-1]
 
     x = np.arange(first_index, last_index)
     y = np.argmin(data[:, first_index:last_index], axis=0)
     poly = Polynomial.fit(x, y, 2)
-    print(f"Distortion coefficients: {poly}")
+    print(f"Distortion coefficients: {poly.coef}")
     return poly
 
 
@@ -44,6 +44,25 @@ def scale_correction(image: np.ndarray) -> np.ndarray:
     return skimage.transform.resize(image, (int(image.shape[0] * scaling_ratio), int(image.shape[1])))
 
 
+def tilt_correction(image: np.ndarray) -> np.ndarray:
+    # Limit fitting to areas with proper signal
+    rows_with_signal = image.max(axis=0) > (0.3 * image.max())
+    first_index = np.nonzero(rows_with_signal)[0][0]
+    last_index = np.nonzero(rows_with_signal)[0][-1]
+
+    # Calculate tilt angle by fitting a line through the center of mass of each row of data
+    x = np.arange(first_index, last_index)
+    sum_masses = image[first_index:last_index, :].sum(axis=1)
+    horizontal_coordinates = np.tile(np.arange(0, image.shape[1]), (last_index - first_index, 1))
+    y = (image[first_index:last_index, :] * horizontal_coordinates).sum(axis=1) / sum_masses
+
+    poly = Polynomial.fit(x, y, 1)
+    shift = poly.convert().coef[1]
+    print(f"Tilt: {np.rad2deg(np.arctan(shift))} degrees")
+
+    return skimage.transform.warp(image, skimage.transform.AffineTransform(shear=-np.arctan(shift)))
+
+
 def main(args):
     input_file = Serfile(args[0])
     print_headers(input_file)
@@ -60,7 +79,7 @@ def main(args):
         image = input_file.readFrameAtPos(i)
         output_frame[i, :] = get_emission_line(image, poly_curve)
 
-    final_output = scale_correction(output_frame)
+    final_output = scale_correction(tilt_correction(output_frame))
     plt.imshow(final_output.T, cmap='gray')
     plt.show()
 
