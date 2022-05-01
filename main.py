@@ -27,22 +27,6 @@ def fit_poly_to_dark_line(data: np.ndarray) -> Polynomial:
     return poly
 
 
-def warp_function(cr: np.ndarray, offset: np.ndarray) -> np.ndarray:
-    output = cr.copy()
-    output[:, 1] += offset
-    return output
-
-
-def fix_image_curvature(image: np.ndarray, curve: np.ndarray) -> np.ndarray:
-    # Explicitly defining the warped shape ensures all the input data fits in the new distortion-corrected image
-    warped_shape = (image.shape[0] + int(curve[0] - curve.min()), image.shape[1])
-    # The offset curve must be repeated to match the warp_function input data shape, and curve[0] is subtracted to keep
-    # the start of the emission line on the same row both in the input data and output data
-    offset = np.repeat(curve, warped_shape[0]) - curve[0]
-    warped_image = skimage.transform.warp(image, warp_function, {'offset': offset}, output_shape=warped_shape)
-    return warped_image
-
-
 @njit
 def get_emission_line(image: np.ndarray, poly_curve: np.ndarray) -> np.ndarray:
     output = np.zeros_like(poly_curve)
@@ -70,13 +54,10 @@ def main(args):
     # Fit 2nd degree polynomial to dark emission line in reference frame
     poly = fit_poly_to_dark_line(ref_frame)
     _, poly_curve = poly.linspace(ref_frame.shape[1], domain=[0, ref_frame.shape[1]])
-    #emission_row = int(poly_curve[0])
 
     output_frame = np.ndarray((input_file.getLength(), ref_frame.shape[1]))
     for i in range(0, input_file.getLength()):
         image = input_file.readFrameAtPos(i)
-        #warped_image = fix_image_curvature(image, poly_curve)
-        #output_frame[i, :] = warped_image[emission_row, :]
         output_frame[i, :] = get_emission_line(image, poly_curve)
 
     final_output = scale_correction(output_frame)
