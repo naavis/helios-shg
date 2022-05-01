@@ -38,7 +38,7 @@ def fix_image_curvature(image: np.ndarray, curve: np.ndarray) -> np.ndarray:
 
 
 @njit
-def get_emission_line(image: np.ndarray, poly_curve: np.ndarray):
+def get_emission_line(image: np.ndarray, poly_curve: np.ndarray) -> np.ndarray:
     output = np.zeros_like(poly_curve)
     for i in range(0, poly_curve.size):
         x = poly_curve[i]
@@ -46,6 +46,11 @@ def get_emission_line(image: np.ndarray, poly_curve: np.ndarray):
         delta = x - lower
         output[i] = (1.0 - delta) * image[lower, i] + delta * image[lower + 1, i]
     return output
+
+
+def scale_correction(image: np.ndarray) -> np.ndarray:
+    scaling_ratio = image.sum(axis=1).std() / image.sum(axis=0).std()
+    return skimage.transform.resize(image, (int(image.shape[0] * scaling_ratio), int(image.shape[1])))
 
 
 def main(args):
@@ -66,7 +71,9 @@ def main(args):
         #warped_image = fix_image_curvature(image, poly_curve)
         #output_frame[i, :] = warped_image[emission_row, :]
         output_frame[i, :] = get_emission_line(image, poly_curve)
-    plt.imshow(output_frame.T, cmap='gray')
+
+    final_output = scale_correction(output_frame)
+    plt.imshow(final_output.T, cmap='gray')
     plt.show()
 
 
