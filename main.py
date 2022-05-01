@@ -1,4 +1,5 @@
 from serfilesreader import Serfile
+import sys
 import matplotlib.pyplot as plt
 import numpy as np
 import skimage.transform
@@ -47,8 +48,8 @@ def get_emission_line(image: np.ndarray, poly_curve: np.ndarray):
     return output
 
 
-def main():
-    input_file = Serfile(r'C:\Users\samul\Desktop\12_08_34\12_08_34.ser')
+def main(args):
+    input_file = Serfile(args[0])
     print_headers(input_file)
 
     # Pick reference frame from middle of video
@@ -65,9 +66,9 @@ def main():
         #warped_image = fix_image_curvature(image, poly_curve)
         #output_frame[i, :] = warped_image[emission_row, :]
         output_frame[i, :] = get_emission_line(image, poly_curve)
-    plt.imshow(output_frame, cmap='gray')
+    plt.imshow(output_frame.T, cmap='gray')
     plt.show()
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
