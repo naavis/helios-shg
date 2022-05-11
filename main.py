@@ -65,6 +65,20 @@ def tilt_correction(image: np.ndarray) -> np.ndarray:
     return skimage.transform.warp(image, skimage.transform.AffineTransform(shear=-np.arctan(shift)))
 
 
+def plot_intermediary_images(ref_frame, raw_output_frame, tilt_corrected, final_output, curve_x, curve_y):
+    fig, ax = plt.subplots(2, 2, tight_layout=True, frameon=False)
+    ax[0, 0].imshow(ref_frame, cmap='gray')
+    ax[0, 0].plot(curve_x, curve_y)
+    ax[0, 0].set_title('Reference frame')
+    ax[0, 1].imshow(raw_output_frame.T, cmap='gray')
+    ax[0, 1].set_title('Before correction')
+    ax[1, 0].imshow(tilt_corrected.T, cmap='gray')
+    ax[1, 0].set_title('After tilt correction')
+    ax[1, 1].imshow(final_output.T, cmap='gray')
+    ax[1, 1].set_title('After scale correction')
+    plt.show()
+
+
 def main(args):
     input_file = Serfile(args[0])
     ser_header = input_file.getHeader()
@@ -74,32 +88,22 @@ def main(args):
     ref_frame_index = int(ser_header['FrameCount'] / 2)
     print(f"Using frame {ref_frame_index} as reference")
     ref_frame = input_file.readFrameAtPos(ref_frame_index)
-    plt.imshow(ref_frame, cmap='gray')
-    plt.title('Reference frame')
-    plt.show()
 
     # Fit 2nd degree polynomial to dark emission line in reference frame
     poly = fit_poly_to_dark_line(ref_frame)
-    _, poly_curve = poly.linspace(ref_frame.shape[1], domain=[0, ref_frame.shape[1]])
+    poly_curve_x, poly_curve = poly.linspace(ref_frame.shape[1], domain=[0, ref_frame.shape[1]])
 
     output_frame = np.ndarray((input_file.getLength(), ref_frame.shape[1]))
     for i in range(0, input_file.getLength()):
         image = input_file.readFrameAtPos(i)
         output_frame[i, :] = get_emission_line(image, poly_curve)
 
-    plt.imshow(output_frame.T, cmap='gray')
-    plt.title('Before correction')
-    plt.show()
     tilt_corrected = tilt_correction(output_frame)
-
-    plt.imshow(tilt_corrected.T, cmap='gray')
-    plt.title('After tilt  correction')
-    plt.show()
-
     final_output = scale_correction(tilt_corrected)
 
+    plot_intermediary_images(ref_frame, output_frame, tilt_corrected, final_output, poly_curve_x, poly_curve)
+
     plt.imshow(final_output.T, cmap='gray')
-    plt.title('Final result')
     plt.show()
 
 
