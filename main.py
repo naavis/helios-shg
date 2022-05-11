@@ -74,6 +74,9 @@ def main(args):
     ref_frame_index = int(ser_header['FrameCount'] / 2)
     print(f"Using frame {ref_frame_index} as reference")
     ref_frame = input_file.readFrameAtPos(ref_frame_index)
+    plt.imshow(ref_frame, cmap='gray')
+    plt.title('Reference frame')
+    plt.show()
 
     # Fit 2nd degree polynomial to dark emission line in reference frame
     poly = fit_poly_to_dark_line(ref_frame)
@@ -84,8 +87,19 @@ def main(args):
         image = input_file.readFrameAtPos(i)
         output_frame[i, :] = get_emission_line(image, poly_curve)
 
-    final_output = scale_correction(tilt_correction(output_frame))
+    plt.imshow(output_frame.T, cmap='gray')
+    plt.title('Before correction')
+    plt.show()
+    tilt_corrected = tilt_correction(output_frame)
+
+    plt.imshow(tilt_corrected.T, cmap='gray')
+    plt.title('After tilt  correction')
+    plt.show()
+
+    final_output = scale_correction(tilt_corrected)
+
     plt.imshow(final_output.T, cmap='gray')
+    plt.title('Final result')
     plt.show()
 
 
