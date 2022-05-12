@@ -15,7 +15,7 @@ def print_headers(header: dict):
 
 def fit_poly_to_dark_line(data: np.ndarray) -> Polynomial:
     # Limit polynomial fitting only to region with proper signal
-    columns_with_signal = data.max(axis=0) > (0.3 * data.max())
+    columns_with_signal = np.median(data, axis=0) > (0.5 * data.max())
     first_index = np.nonzero(columns_with_signal)[0][0]
     last_index = np.nonzero(columns_with_signal)[0][-1]
 
