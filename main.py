@@ -36,6 +36,15 @@ def get_emission_line(image: np.ndarray, poly_curve: np.ndarray) -> np.ndarray:
         output[i] = (1.0 - delta) * image[lower, i] + delta * image[lower + 1, i]
     return output
 
+@njit
+def get_emission_line2(image: np.ndarray, poly_curve: np.ndarray, wing: int = 0) -> np.ndarray:
+    output = np.zeros_like(poly_curve)
+    for i in range(0, poly_curve.size):
+        lower = int(np.round(poly_curve[i]) - wing)
+        upper = int(np.round(poly_curve[i]) + wing)
+        output[i] = np.mean(image[lower:(upper+1), i])
+    return output
+
 
 def scale_correction(image: np.ndarray) -> np.ndarray:
     sun_pixels = np.nonzero(1.0 * (image > 0.3 * image.max()))
@@ -96,12 +105,12 @@ def main(args):
     output_frame = np.ndarray((input_file.getLength(), ref_frame.shape[1]))
     for i in range(0, input_file.getLength()):
         image = input_file.readFrameAtPos(i)
-        output_frame[i, :] = get_emission_line(image, poly_curve)
+        output_frame[i, :] = get_emission_line2(image, poly_curve, wing=0)
 
     tilt_corrected = tilt_correction(output_frame)
     final_output = scale_correction(tilt_corrected)
 
-    plot_intermediary_images(ref_frame, output_frame, tilt_corrected, final_output, poly_curve_x, poly_curve)
+    #plot_intermediary_images(ref_frame, output_frame, tilt_corrected, final_output, poly_curve_x, poly_curve)
 
     plt.imshow(final_output.T, cmap='gray')
     plt.show()
