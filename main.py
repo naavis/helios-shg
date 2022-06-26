@@ -65,12 +65,12 @@ def tilt_correction(image: np.ndarray) -> np.ndarray:
     return skimage.transform.warp(image, skimage.transform.AffineTransform(shear=-np.arctan(shift)))
 
 
-def show_image(image):
+def show_image(image: np.ndarray):
     plt.imshow(image, cmap='gray')
     plt.show()
 
 
-def process_video(filename):
+def process_video(filename: str) -> np.ndarray:
     input_file = Serfile(filename)
     ser_header = input_file.getHeader()
     print_headers(ser_header)
@@ -89,7 +89,7 @@ def process_video(filename):
     return final_output
 
 
-def main(args):
+def main(args: [str]):
     final_output = process_video(args[0])
     show_image(final_output)
 

@@ -2,3 +2,5 @@ matplotlib~=3.3.2
 numpy~=1.19.2
 scikit-image~=0.17.2
 numba~=0.51.2
+imageio~=2.9.0
+scipy~=1.5.2
