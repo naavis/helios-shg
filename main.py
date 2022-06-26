@@ -65,6 +65,11 @@ def tilt_correction(image: np.ndarray) -> np.ndarray:
     return skimage.transform.warp(image, skimage.transform.AffineTransform(shear=-np.arctan(shift)))
 
 
+def show_image(image):
+    plt.imshow(image, cmap='gray')
+    plt.show()
+
+
 def main(args):
     input_file = Serfile(args[0])
     ser_header = input_file.getHeader()
@@ -84,9 +89,8 @@ def main(args):
         image = input_file.readFrameAtPos(i)
         output_frame[i, :] = get_emission_line(image, poly_curve)
 
-    final_output = scale_correction(tilt_correction(output_frame))
-    plt.imshow(final_output.T, cmap='gray')
-    plt.show()
+    final_output = scale_correction(tilt_correction(output_frame)).T
+    show_image(final_output)
 
 
 if __name__ == '__main__':
