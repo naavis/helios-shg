@@ -2,7 +2,12 @@ from serfilesreader import Serfile
 import sys
 import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.transforms
 import skimage.transform
+import skimage.feature
+import skimage.draw
+import skimage.morphology
+import skimage.measure
 from numpy.polynomial import Polynomial
 from numba import njit
 
@@ -37,37 +42,67 @@ def get_emission_line(image: np.ndarray, poly_curve: np.ndarray) -> np.ndarray:
     return output
 
 
-def scale_correction(image: np.ndarray) -> np.ndarray:
-    sun_pixels = np.nonzero(1.0 * (image > 0.3 * image.max()))
-    vertical_range = sun_pixels[0].max() - sun_pixels[0].min()
-    horizontal_range = sun_pixels[1].max() - sun_pixels[1].min()
-    scaling_ratio = horizontal_range / vertical_range
-    print(f"Scale correction: {scaling_ratio}")
-    return skimage.transform.resize(image, (int(image.shape[0] * scaling_ratio), int(image.shape[1])))
+def geometric_correction(image: np.ndarray) -> np.ndarray:
+    xc, yc, a, b, theta = fit_ellipse(image)
+    shear_angle = rot_to_shear(a, b, theta)
+    corrected_shear_angle = np.pi / 2 - shear_angle
+    print(f'Tilt: {np.rad2deg(corrected_shear_angle)} degrees')
 
+    # Shearing with skimage contains a bug, so using matplotlib instead:
+    # https://github.com/scikit-image/scikit-image/issues/3239
 
-def tilt_correction(image: np.ndarray) -> np.ndarray:
-    # Limit fitting to areas with proper signal
-    rows_with_signal = image.max(axis=1) > (0.3 * image.max())
-    first_index = np.nonzero(rows_with_signal)[0][0]
-    last_index = np.nonzero(rows_with_signal)[0][-1]
+    # Shearing the image changes the scale a bit, making the scale correction a bit off.
+    # It is so insignificant that we don't care about it here, though.
 
-    # Calculate tilt angle by fitting a line through the center of mass of each row of data
-    x = np.arange(first_index, last_index)
-    sum_masses = image[first_index:last_index, :].sum(axis=1)
-    horizontal_coordinates = np.tile(np.arange(0, image.shape[1]), (last_index - first_index, 1))
-    y = (image[first_index:last_index, :] * horizontal_coordinates).sum(axis=1) / sum_masses
+    scale = b / a
+    print(f'Scale: {scale}')
 
-    poly = Polynomial.fit(x, y, 1)
-    shift = poly.convert().coef[1]
-    print(f"Tilt: {np.rad2deg(np.arctan(shift))} degrees")
-
-    return skimage.transform.warp(image, skimage.transform.AffineTransform(shear=-np.arctan(shift)))
+    transform = matplotlib.transforms.Affine2D()
+    transform.scale(1, scale)
+    transform.skew(corrected_shear_angle, 0.0)
+    output_shape = (int(image.shape[0] / scale), image.shape[1]) if scale < 1.0 else None
+    corrected_image = skimage.transform.warp(image, transform.get_matrix(), order=3, output_shape=output_shape)
+    return corrected_image
 
 
 def show_image(image: np.ndarray):
+    plt.imshow(image, cmap='gray', vmin=0.0)
+    plt.show()
+
+
+def fit_ellipse(image: np.ndarray) -> tuple:
+    edges = skimage.feature.canny(image > 0.1 * image.max())
+    edge_points = np.fliplr(np.argwhere(edges))
+
+    # plot_edge_points_on_image(image, edge_points)
+
+    ellipse = skimage.measure.EllipseModel()
+    ellipse.estimate(edge_points)
+    xc, yc, a, b, theta = ellipse.params
+    print(f'Found ellipse at: ({xc}, {yc}) with a: {a}, b: {b} and rotation {np.rad2deg(theta)}°')
+
+    # plot_ellipse_on_image(image, xc, yc, a, b, theta)
+
+    return xc, yc, a, b, theta
+
+
+def plot_ellipse_on_image(image: np.ndarray, xc: float, yc: float, a: float, b: float, theta: float):
+    points = skimage.measure.EllipseModel().predict_xy(np.linspace(0.0, np.pi * 2, 100), [xc, yc, a, b, theta])
+    plt.scatter(points[:, 0], points[:, 1])
     plt.imshow(image, cmap='gray')
     plt.show()
+
+
+def plot_edge_points_on_image(image, edge_points):
+    plt.scatter(edge_points[:, 0], edge_points[:, 1])
+    plt.imshow(image, cmap='gray', vmin=0.0)
+    plt.show()
+
+
+def rot_to_shear(a: float, b: float, theta: float):
+    # Stolen from here: https://math.stackexchange.com/a/2510239
+    slope = (a * a * np.tan(theta) + b * b / np.tan(theta)) / (a * a - b * b)
+    return np.arctan(slope)
 
 
 def process_video(filename: str) -> np.ndarray:
@@ -85,7 +120,8 @@ def process_video(filename: str) -> np.ndarray:
     for i in range(0, input_file.getLength()):
         image = input_file.readFrameAtPos(i)
         output_frame[i, :] = get_emission_line(image, poly_curve)
-    final_output = scale_correction(tilt_correction(output_frame)).T
+
+    final_output = geometric_correction(output_frame).T
     return final_output
 
 
