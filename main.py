@@ -70,26 +70,27 @@ def show_image(image):
     plt.show()
 
 
-def main(args):
-    input_file = Serfile(args[0])
+def process_video(filename):
+    input_file = Serfile(filename)
     ser_header = input_file.getHeader()
     print_headers(ser_header)
-
     # Pick reference frame from middle of video
     ref_frame_index = int(ser_header['FrameCount'] / 2)
     print(f"Using frame {ref_frame_index} as reference")
     ref_frame = input_file.readFrameAtPos(ref_frame_index)
-
     # Fit 2nd degree polynomial to dark emission line in reference frame
     poly = fit_poly_to_dark_line(ref_frame)
     _, poly_curve = poly.linspace(ref_frame.shape[1], domain=[0, ref_frame.shape[1]])
-
     output_frame = np.ndarray((input_file.getLength(), ref_frame.shape[1]))
     for i in range(0, input_file.getLength()):
         image = input_file.readFrameAtPos(i)
         output_frame[i, :] = get_emission_line(image, poly_curve)
-
     final_output = scale_correction(tilt_correction(output_frame)).T
+    return final_output
+
+
+def main(args):
+    final_output = process_video(args[0])
     show_image(final_output)
 
 
