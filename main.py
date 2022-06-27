@@ -54,6 +54,9 @@ def geometric_correction(image: np.ndarray) -> np.ndarray:
     # Shearing the image changes the scale a bit, making the scale correction a bit off.
     # It is so insignificant that we don't care about it here, though.
 
+    # FIXME: EllipseModel fitting gives inconsistent results, sometimes
+    # having a < b and the rotation angle 90 off.
+
     scale = b / a
     print(f'Scale: {scale}')
 
