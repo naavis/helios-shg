@@ -17,10 +17,11 @@ def batch_process(args):
         result_image = process_video(f)
         center_of_mass = scipy.ndimage.center_of_mass(result_image)
         desired_side_length = 1700
-        padding = 200
+        padding = 1000
         com_x = padding + int(np.floor(center_of_mass[0]))
         com_y = padding + int(np.floor(center_of_mass[1]))
-        cropped_image = np.pad(result_image, padding)[(com_x - desired_side_length // 2):(com_x + desired_side_length // 2), (com_y - desired_side_length // 2):(com_y + desired_side_length // 2)]
+        padded_image = np.pad(result_image, padding)
+        cropped_image = padded_image[(com_x - desired_side_length // 2):(com_x + desired_side_length // 2), (com_y - desired_side_length // 2):(com_y + desired_side_length // 2)]
         imageio.imwrite(new_file_path, cropped_image.astype(np.uint16))
 
 
