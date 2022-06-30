@@ -11,8 +11,10 @@ from main import process_video
 def batch_process(args):
     glob_pattern = args[0]
     files = glob.glob(glob_pattern)
+    files.sort()
     print(f'Found files: {files}')
     for f in files:
+        print(f'Processing: {f}')
         new_file_path = pathlib.Path(f).with_suffix('.png')
         result_image = process_video(f)
         center_of_mass = scipy.ndimage.center_of_mass(result_image)
