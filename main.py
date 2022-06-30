@@ -42,6 +42,19 @@ def get_emission_line(image: np.ndarray, poly_curve: np.ndarray) -> np.ndarray:
     return output
 
 
+def correct_ellipse_model_params(a: float, b: float, theta: float) -> tuple:
+    if a < b:
+        if theta < np.pi / 2:
+            return b, a, theta + np.pi / 2
+        else:
+            return b, a, theta - np.pi / 2
+    else:
+        if theta < 0:
+            return a, b, np.pi + theta
+        else:
+            return a, b, theta
+
+
 def geometric_correction(image: np.ndarray) -> np.ndarray:
     xc, yc, a, b, theta = fit_ellipse(image)
     shear_angle = rot_to_shear(a, b, theta)
@@ -54,10 +67,7 @@ def geometric_correction(image: np.ndarray) -> np.ndarray:
     # Shearing the image changes the scale a bit, making the scale correction a bit off.
     # It is so insignificant that we don't care about it here, though.
 
-    # FIXME: EllipseModel fitting gives inconsistent results, sometimes
-    # having a < b and the rotation angle 90 off.
-
-    scale = b / a
+    scale = a / b
     print(f'Scale: {scale}')
 
     transform = matplotlib.transforms.Affine2D()
@@ -82,6 +92,7 @@ def fit_ellipse(image: np.ndarray) -> tuple:
     ellipse = skimage.measure.EllipseModel()
     ellipse.estimate(edge_points)
     xc, yc, a, b, theta = ellipse.params
+    a, b, theta = correct_ellipse_model_params(a, b, theta)
     print(f'Found ellipse at: ({xc}, {yc}) with a: {a}, b: {b} and rotation {np.rad2deg(theta)}°')
 
     # plot_ellipse_on_image(image, xc, yc, a, b, theta)
