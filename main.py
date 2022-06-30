@@ -42,6 +42,10 @@ def get_emission_line(image: np.ndarray, poly_curve: np.ndarray) -> np.ndarray:
     return output
 
 
+# EllipseModel from scikit-image does not give consistent results
+# for the ellipse parameters. This function corrects them, so that
+# the `a` axis is always the longest one, and the theta is the clockwise
+# angle between the `a` axis and the positive horizontal axis.
 def correct_ellipse_model_params(a: float, b: float, theta: float) -> tuple:
     if a < b:
         if theta < np.pi / 2:
@@ -67,7 +71,12 @@ def geometric_correction(image: np.ndarray) -> np.ndarray:
     # Shearing the image changes the scale a bit, making the scale correction a bit off.
     # It is so insignificant that we don't care about it here, though.
 
-    scale = a / b
+    # This is a bit of a hack to determine whether to squish or stretch the image,
+    # i.e. whether the horizontal or vertical axis of the ellipse is the longer one
+    if np.abs(theta - np.pi / 2) < np.pi / 4:
+        scale = a / b
+    else:
+        scale = b / a
     print(f'Scale: {scale}')
 
     transform = matplotlib.transforms.Affine2D()
