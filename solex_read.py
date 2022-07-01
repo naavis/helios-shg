@@ -29,7 +29,7 @@ def process_video(filename: str) -> np.ndarray:
         output_frame[i, :] = get_absorption_line(image, poly_curve)
 
     final_output = geometric_correction(output_frame).T
-    return crop_image(final_output)
+    return final_output
 
 
 @click.command()
