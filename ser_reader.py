@@ -18,6 +18,18 @@ class SerFile:
         self._file_mmap.close()
         self._file_handle.close()
 
+    def read_frame(self, frame_index):
+        bytes_per_frame = self.width * self.height * self.bytes_per_pixel
+        offset = 178 + frame_index * bytes_per_frame
+        self._file_mmap.seek(offset)
+
+        data_type = np \
+            .dtype('uint16' if self.bytes_per_pixel == 2 else 'uint8') \
+            .newbyteorder('<' if self.little_endian else '>')
+        raw_bytes = self._file_mmap.read(bytes_per_frame)
+        image_1d = np.frombuffer(raw_bytes, data_type)
+        return image_1d.reshape((self.height, self.width))
+
     def _read_header(self):
         header = {}
         offset = 0
@@ -55,18 +67,6 @@ class SerFile:
         offset += 4
 
         return header
-
-    def read_frame(self, frame_index):
-        bytes_per_frame = self.width * self.height * self.bytes_per_pixel
-        offset = 178 + frame_index * bytes_per_frame
-        self._file_mmap.seek(offset)
-
-        data_type = np\
-            .dtype('uint16' if self.bytes_per_pixel == 2 else 'uint8')\
-            .newbyteorder('<' if self.little_endian else '>')
-        raw_bytes = self._file_mmap.read(bytes_per_frame)
-        image_1d = np.frombuffer(raw_bytes, data_type)
-        return image_1d.reshape((self.height, self.width))
 
     def _get_bytes_per_pixel(self):
         if self.header['ColorId'] <= 19:
