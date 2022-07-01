@@ -42,6 +42,14 @@ def get_emission_line(image: np.ndarray, poly_curve: np.ndarray) -> np.ndarray:
     return output
 
 
+def get_emission_line2(image: np.ndarray, poly_curve: np.ndarray) -> np.ndarray:
+    lowers = np.floor(poly_curve).astype(int)
+    deltas = poly_curve - lowers
+    xs = np.arange(0, poly_curve.size, dtype=int)
+    output = (1.0 - deltas) * image[lowers, xs] + deltas * image[lowers + 1, xs]
+    return output
+
+
 # EllipseModel from scikit-image does not give consistent results
 # for the ellipse parameters. This function corrects them, so that
 # the `a` axis is always the longest one, and the theta is the clockwise
@@ -152,7 +160,7 @@ def process_video(filename: str) -> np.ndarray:
     output_frame = np.ndarray((input_file.frame_count, ref_frame.shape[1]))
     for i in range(0, input_file.frame_count):
         image = input_file.read_frame(i)
-        output_frame[i, :] = get_emission_line(image, poly_curve)
+        output_frame[i, :] = get_emission_line2(image, poly_curve)
 
     final_output = geometric_correction(output_frame).T
     return final_output
