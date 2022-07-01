@@ -35,7 +35,7 @@ class SerFile:
     def print_headers(self):
         click.echo('SER file headers:')
         for header_key in self.header:
-            click.echo(f'\t{header_key}: {self.header[header_key]}')
+            click.echo(f'  {header_key}: {self.header[header_key]}')
 
     def _read_header(self):
         header = {}
