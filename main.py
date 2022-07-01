@@ -62,7 +62,10 @@ def correct_ellipse_model_params(a: float, b: float, theta: float) -> tuple:
 def geometric_correction(image: np.ndarray) -> np.ndarray:
     xc, yc, a, b, theta = fit_ellipse(image)
     shear_angle = rot_to_shear(a, b, theta)
-    corrected_shear_angle = np.pi / 2 - shear_angle
+    # The shear angle needs some manipulation to be in the correct
+    # range for our purposes. This ensures it is always centered
+    # around 0 degrees with solar scans, and not -90 or 90 degrees.
+    corrected_shear_angle = -(shear_angle + np.pi / 2 if shear_angle < 0 else shear_angle - np.pi / 2)
     print(f'Tilt: {np.rad2deg(corrected_shear_angle):.2f} degrees')
 
     # This is a bit of a hack to determine whether to squish or stretch the image,
