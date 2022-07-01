@@ -5,7 +5,7 @@ import numpy as np
 from solex.correction import geometric_correction
 from solex.linefitting import fit_poly_to_dark_line, get_absorption_line
 from solex.ser_reader import SerFile
-from solex.utils import show_image
+from solex.utils import show_image, crop_image
 
 
 def process_video(filename: str) -> np.ndarray:
@@ -25,7 +25,7 @@ def process_video(filename: str) -> np.ndarray:
         output_frame[i, :] = get_absorption_line(image, poly_curve)
 
     final_output = geometric_correction(output_frame).T
-    return final_output
+    return crop_image(final_output)
 
 
 def main(args: [str]):
