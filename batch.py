@@ -1,8 +1,9 @@
-import imageio
-import numpy as np
 import glob
 import pathlib
 import sys
+
+import imageio
+import numpy as np
 
 import solex.correction
 from main import process_video

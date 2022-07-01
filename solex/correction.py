@@ -1,10 +1,10 @@
-import numpy as np
 import matplotlib.transforms
-import skimage.transform
-import skimage.feature
+import numpy as np
 import skimage.draw
-import skimage.morphology
+import skimage.feature
 import skimage.measure
+import skimage.morphology
+import skimage.transform
 from numba import njit
 
 

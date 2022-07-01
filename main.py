@@ -1,8 +1,10 @@
-from solex.correction import geometric_correction
-from solex.ser_reader import SerFile
 import sys
+
 import numpy as np
+
+from solex.correction import geometric_correction
 from solex.linefitting import fit_poly_to_dark_line, get_absorption_line
+from solex.ser_reader import SerFile
 from solex.utils import show_image
 
 
