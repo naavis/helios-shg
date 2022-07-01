@@ -36,6 +36,8 @@ class SerFile:
         self._file_mmap.seek(offset)
 
         header['FileId'] = self._file_mmap.read(14).decode('utf-8')
+        if header['FileId'].strip() != 'LUCAM-RECORDER':
+            raise RuntimeError('Input file is not a valid SER file')
         offset += 14
 
         self._file_mmap.seek(offset)
