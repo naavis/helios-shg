@@ -32,7 +32,7 @@ def fit_poly_to_dark_line(data: np.ndarray) -> Polynomial:
 
 
 @njit
-def get_emission_line(image: np.ndarray, poly_curve: np.ndarray) -> np.ndarray:
+def get_absorption_line(image: np.ndarray, poly_curve: np.ndarray) -> np.ndarray:
     output = np.zeros_like(poly_curve)
     for i in range(0, poly_curve.size):
         x = poly_curve[i]
@@ -146,13 +146,13 @@ def process_video(filename: str) -> np.ndarray:
     ref_frame_index = int(input_file.frame_count / 2)
     print(f"Using frame {ref_frame_index} as reference")
     ref_frame = input_file.read_frame(ref_frame_index)
-    # Fit 2nd degree polynomial to dark emission line in reference frame
+    # Fit 2nd degree polynomial to dark absorption line in reference frame
     poly = fit_poly_to_dark_line(ref_frame)
     _, poly_curve = poly.linspace(ref_frame.shape[1], domain=[0, ref_frame.shape[1]])
     output_frame = np.ndarray((input_file.frame_count, ref_frame.shape[1]))
     for i in range(0, input_file.frame_count):
         image = input_file.read_frame(i)
-        output_frame[i, :] = get_emission_line(image, poly_curve)
+        output_frame[i, :] = get_absorption_line(image, poly_curve)
 
     final_output = geometric_correction(output_frame).T
     return final_output
