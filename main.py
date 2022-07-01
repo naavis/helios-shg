@@ -1,4 +1,4 @@
-from serfilesreader import Serfile
+from ser_reader import SerFile
 import sys
 import matplotlib.pyplot as plt
 import numpy as np
@@ -139,19 +139,19 @@ def rot_to_shear(a: float, b: float, theta: float):
 
 
 def process_video(filename: str) -> np.ndarray:
-    input_file = Serfile(filename)
-    ser_header = input_file.getHeader()
+    input_file = SerFile(filename)
+    ser_header = input_file.header
     print_headers(ser_header)
     # Pick reference frame from middle of video
-    ref_frame_index = int(ser_header['FrameCount'] / 2)
+    ref_frame_index = int(input_file.frame_count / 2)
     print(f"Using frame {ref_frame_index} as reference")
-    ref_frame = input_file.readFrameAtPos(ref_frame_index)
+    ref_frame = input_file.read_frame(ref_frame_index)
     # Fit 2nd degree polynomial to dark emission line in reference frame
     poly = fit_poly_to_dark_line(ref_frame)
     _, poly_curve = poly.linspace(ref_frame.shape[1], domain=[0, ref_frame.shape[1]])
-    output_frame = np.ndarray((input_file.getLength(), ref_frame.shape[1]))
-    for i in range(0, input_file.getLength()):
-        image = input_file.readFrameAtPos(i)
+    output_frame = np.ndarray((input_file.frame_count, ref_frame.shape[1]))
+    for i in range(0, input_file.frame_count):
+        image = input_file.read_frame(i)
         output_frame[i, :] = get_emission_line(image, poly_curve)
 
     final_output = geometric_correction(output_frame).T
