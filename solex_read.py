@@ -19,6 +19,8 @@ def process_video(filename: str, ref_frame_index: int = None) -> np.ndarray:
     # Pick reference frame from middle of video
     if ref_frame_index is None:
         ref_frame_index = int(input_file.frame_count / 2)
+    elif ref_frame_index < 0 or ref_frame_index >= input_file.frame_count:
+        raise RuntimeError('Invalid reference frame index supplied')
     click.echo(f"Using frame {ref_frame_index} as reference")
     ref_frame = input_file.read_frame(ref_frame_index)
 
