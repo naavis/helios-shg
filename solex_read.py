@@ -12,12 +12,13 @@ from solex.ser_reader import SerFile
 from solex.utils import show_image, crop_image
 
 
-def process_video(filename: str) -> np.ndarray:
+def process_video(filename: str, ref_frame_index: int = None) -> np.ndarray:
     input_file = SerFile(filename)
     input_file.print_headers()
 
     # Pick reference frame from middle of video
-    ref_frame_index = int(input_file.frame_count / 2)
+    if ref_frame_index is None:
+        ref_frame_index = int(input_file.frame_count / 2)
     click.echo(f"Using frame {ref_frame_index} as reference")
     ref_frame = input_file.read_frame(ref_frame_index)
 
@@ -36,8 +37,9 @@ def process_video(filename: str) -> np.ndarray:
 @click.option('--save', is_flag=True, default=False, help='Save image to PNG file')
 @click.option('--no-show', is_flag=True, default=False, help='Do not show image after processing')
 @click.option('--no-crop', is_flag=True, default=False, help='Do not do automatic cropping')
+@click.option('--ref-frame', type=int, help='Reference frame for finding absorption line, defaults to middle frame')
 @click.argument('files', nargs=-1)
-def solex_read(files, save, no_show, no_crop):
+def solex_read(files, save, no_show, no_crop, ref_frame):
     """Processes Sol'Ex spectroheliograph videos into narrowband still images."""
     if os.name == 'nt':
         # Windows does not automatically expand wildcards, so that has to be done with the glob module.
@@ -46,7 +48,7 @@ def solex_read(files, save, no_show, no_crop):
         files = [glob.glob(f) if any(c in f for c in ['*', '?', '[', ']']) else f for f in files]
     for f in files:
         click.echo(f'Processing: {f}')
-        result = process_video(f)
+        result = process_video(f, ref_frame)
         if not no_crop:
             result = crop_image(result)
         click.echo(f'Result image size: {result.shape[0]}x{result.shape[1]} pixels')
