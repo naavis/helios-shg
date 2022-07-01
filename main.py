@@ -42,24 +42,6 @@ def get_absorption_line(image: np.ndarray, poly_curve: np.ndarray) -> np.ndarray
     return output
 
 
-# EllipseModel from scikit-image does not give consistent results
-# for the ellipse parameters. This function corrects them, so that
-# the `a` axis is always the longest one, and the theta is the clockwise
-# angle between the `a` axis and the positive horizontal axis.
-@njit(cache=True)
-def correct_ellipse_model_params(a: float, b: float, theta: float) -> tuple:
-    if a < b:
-        if theta < np.pi / 2:
-            return b, a, theta + np.pi / 2
-        else:
-            return b, a, theta - np.pi / 2
-    else:
-        if theta < 0:
-            return a, b, np.pi + theta
-        else:
-            return a, b, theta
-
-
 def geometric_correction(image: np.ndarray) -> np.ndarray:
     xc, yc, a, b, theta = fit_ellipse(image)
     shear_angle = rot_to_shear(a, b, theta)
@@ -90,9 +72,11 @@ def geometric_correction(image: np.ndarray) -> np.ndarray:
     return corrected_image
 
 
-def show_image(image: np.ndarray):
-    plt.imshow(image, cmap='gray', vmin=0.0)
-    plt.show()
+@njit(cache=True)
+def rot_to_shear(a: float, b: float, theta: float):
+    # Stolen from here: https://math.stackexchange.com/a/2510239
+    slope = (a * a * np.tan(theta) + b * b / np.tan(theta)) / (a * a - b * b)
+    return np.arctan(slope)
 
 
 def fit_ellipse(image: np.ndarray) -> tuple:
@@ -116,11 +100,22 @@ def fit_ellipse(image: np.ndarray) -> tuple:
     return xc, yc, a, b, theta
 
 
+# EllipseModel from scikit-image does not give consistent results
+# for the ellipse parameters. This function corrects them, so that
+# the `a` axis is always the longest one, and the theta is the clockwise
+# angle between the `a` axis and the positive horizontal axis.
 @njit(cache=True)
-def rot_to_shear(a: float, b: float, theta: float):
-    # Stolen from here: https://math.stackexchange.com/a/2510239
-    slope = (a * a * np.tan(theta) + b * b / np.tan(theta)) / (a * a - b * b)
-    return np.arctan(slope)
+def correct_ellipse_model_params(a: float, b: float, theta: float) -> tuple:
+    if a < b:
+        if theta < np.pi / 2:
+            return b, a, theta + np.pi / 2
+        else:
+            return b, a, theta - np.pi / 2
+    else:
+        if theta < 0:
+            return a, b, np.pi + theta
+        else:
+            return a, b, theta
 
 
 def process_video(filename: str) -> np.ndarray:
@@ -141,6 +136,11 @@ def process_video(filename: str) -> np.ndarray:
 
     final_output = geometric_correction(output_frame).T
     return final_output
+
+
+def show_image(image: np.ndarray):
+    plt.imshow(image, cmap='gray', vmin=0.0)
+    plt.show()
 
 
 def main(args: [str]):
