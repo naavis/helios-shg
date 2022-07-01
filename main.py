@@ -31,7 +31,7 @@ def fit_poly_to_dark_line(data: np.ndarray) -> Polynomial:
     return poly
 
 
-@njit
+@njit(cache=True)
 def get_absorption_line(image: np.ndarray, poly_curve: np.ndarray) -> np.ndarray:
     output = np.zeros_like(poly_curve)
     for i in range(0, poly_curve.size):
@@ -46,6 +46,7 @@ def get_absorption_line(image: np.ndarray, poly_curve: np.ndarray) -> np.ndarray
 # for the ellipse parameters. This function corrects them, so that
 # the `a` axis is always the longest one, and the theta is the clockwise
 # angle between the `a` axis and the positive horizontal axis.
+@njit(cache=True)
 def correct_ellipse_model_params(a: float, b: float, theta: float) -> tuple:
     if a < b:
         if theta < np.pi / 2:
@@ -132,6 +133,7 @@ def plot_edge_points_on_image(image, edge_points):
     plt.show()
 
 
+@njit(cache=True)
 def rot_to_shear(a: float, b: float, theta: float):
     # Stolen from here: https://math.stackexchange.com/a/2510239
     slope = (a * a * np.tan(theta) + b * b / np.tan(theta)) / (a * a - b * b)
