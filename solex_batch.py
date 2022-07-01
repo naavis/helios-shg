@@ -16,9 +16,9 @@ def batch_process(args):
     print(f'Found files: {files}')
     for f in files:
         print(f'Processing: {f}')
-        new_file_path = pathlib.Path(f).with_suffix('.png')
         result_image = process_video(f)
         cropped_image = crop_image(result_image)
+        new_file_path = pathlib.Path(f).with_suffix('.png')
         imageio.imwrite(new_file_path, cropped_image.astype(np.uint16))
 
 
