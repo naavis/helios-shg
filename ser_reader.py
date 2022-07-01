@@ -1,9 +1,12 @@
+import mmap
 import numpy as np
 
 
 class SerFile:
     def __init__(self, file_path):
         self.file_path = file_path
+        self._file_handle = open(self.file_path, 'rb')
+        self._file_mmap = mmap.mmap(self._file_handle.fileno(), 0, access=mmap.ACCESS_READ)
         self.header = self._read_header()
         self.width = self.header['Width']
         self.height = self.header['Height']
@@ -11,55 +14,59 @@ class SerFile:
         self.little_endian = self.header['LittleEndian'] == 0
         self.bytes_per_pixel = self._get_bytes_per_pixel()
 
+    def __del__(self):
+        self._file_mmap.close()
+        self._file_handle.close()
+
     def _read_header(self):
         header = {}
-        with open(self.file_path, 'rb') as f:
-            offset = 0
-            f.seek(offset)
+        offset = 0
+        self._file_mmap.seek(offset)
 
-            header['FileId'] = f.read(14).decode('utf-8')
-            offset += 14
+        header['FileId'] = self._file_mmap.read(14).decode('utf-8')
+        offset += 14
 
-            f.seek(offset)
-            header['LuId'] = int.from_bytes(f.read(4), 'little', signed=False)
-            offset += 4
+        self._file_mmap.seek(offset)
+        header['LuId'] = int.from_bytes(self._file_mmap.read(4), 'little', signed=False)
+        offset += 4
 
-            f.seek(offset)
-            header['ColorId'] = int.from_bytes(f.read(4), 'little', signed=False)
-            offset += 4
+        self._file_mmap.seek(offset)
+        header['ColorId'] = int.from_bytes(self._file_mmap.read(4), 'little', signed=False)
+        offset += 4
 
-            f.seek(offset)
-            header['LittleEndian'] = int.from_bytes(f.read(4), 'little', signed=False)
-            offset += 4
+        self._file_mmap.seek(offset)
+        header['LittleEndian'] = int.from_bytes(self._file_mmap.read(4), 'little', signed=False)
+        offset += 4
 
-            f.seek(offset)
-            header['Width'] = int.from_bytes(f.read(4), 'little', signed=False)
-            offset += 4
+        self._file_mmap.seek(offset)
+        header['Width'] = int.from_bytes(self._file_mmap.read(4), 'little', signed=False)
+        offset += 4
 
-            f.seek(offset)
-            header['Height'] = int.from_bytes(f.read(4), 'little', signed=False)
-            offset += 4
+        self._file_mmap.seek(offset)
+        header['Height'] = int.from_bytes(self._file_mmap.read(4), 'little', signed=False)
+        offset += 4
 
-            f.seek(offset)
-            header['PixelDepthPerPlane'] = int.from_bytes(f.read(4), 'little', signed=False)
-            offset += 4
+        self._file_mmap.seek(offset)
+        header['PixelDepthPerPlane'] = int.from_bytes(self._file_mmap.read(4), 'little', signed=False)
+        offset += 4
 
-            f.seek(offset)
-            header['FrameCount'] = int.from_bytes(f.read(4), 'little', signed=False)
-            offset += 4
+        self._file_mmap.seek(offset)
+        header['FrameCount'] = int.from_bytes(self._file_mmap.read(4), 'little', signed=False)
+        offset += 4
 
         return header
 
     def read_frame(self, frame_index):
-        with open(self.file_path, 'rb') as f:
-            offset = 178 + frame_index * self.width * self.height * self.bytes_per_pixel
-            f.seek(offset)
+        bytes_per_frame = self.width * self.height * self.bytes_per_pixel
+        offset = 178 + frame_index * bytes_per_frame
+        self._file_mmap.seek(offset)
 
-            data_type = np\
-                .dtype('uint16' if self.bytes_per_pixel == 2 else 'uint8')\
-                .newbyteorder('<' if self.little_endian else '>')
-            raw_data = np.fromfile(f, dtype=data_type, count=self.width * self.height)
-            return raw_data.reshape((self.height, self.width))
+        data_type = np\
+            .dtype('uint16' if self.bytes_per_pixel == 2 else 'uint8')\
+            .newbyteorder('<' if self.little_endian else '>')
+        raw_bytes = self._file_mmap.read(bytes_per_frame)
+        raw_data = np.frombuffer(raw_bytes, data_type)
+        return raw_data.reshape((self.height, self.width))
 
     def _get_bytes_per_pixel(self):
         if self.header['ColorId'] <= 19:
