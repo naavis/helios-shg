@@ -105,8 +105,6 @@ def fit_ellipse(image: np.ndarray) -> tuple:
     if edge_points.shape[0] > 100:
         edge_points = edge_points[::int(np.ceil(edge_points.shape[0] / 100)), :]
 
-    # plot_edge_points_on_image(image, edge_points)
-
     ellipse = skimage.measure.EllipseModel()
     estimation_successful = ellipse.estimate(edge_points)
     if not estimation_successful:
@@ -115,22 +113,7 @@ def fit_ellipse(image: np.ndarray) -> tuple:
     a, b, theta = correct_ellipse_model_params(a, b, theta)
     print(f'Found ellipse at: ({xc:.2f}, {yc:.2f}) with a: {a:.2f}, b: {b:.2f} and rotation {np.rad2deg(theta):.2f}°')
 
-    # plot_ellipse_on_image(image, xc, yc, a, b, theta)
-
     return xc, yc, a, b, theta
-
-
-def plot_ellipse_on_image(image: np.ndarray, xc: float, yc: float, a: float, b: float, theta: float):
-    points = skimage.measure.EllipseModel().predict_xy(np.linspace(0.0, np.pi * 2, 100), [xc, yc, a, b, theta])
-    plt.scatter(points[:, 0], points[:, 1])
-    plt.imshow(image, cmap='gray')
-    plt.show()
-
-
-def plot_edge_points_on_image(image, edge_points):
-    plt.scatter(edge_points[:, 0], edge_points[:, 1])
-    plt.imshow(image, cmap='gray', vmin=0.0)
-    plt.show()
 
 
 @njit(cache=True)
