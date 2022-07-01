@@ -5,7 +5,7 @@ import sys
 import imageio
 import numpy as np
 
-from main import process_video
+from solex_read import process_video
 from solex.utils import crop_image
 
 
