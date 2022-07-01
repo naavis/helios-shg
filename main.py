@@ -81,7 +81,7 @@ def geometric_correction(image: np.ndarray) -> np.ndarray:
     transform = matplotlib.transforms.Affine2D()
     transform.scale(1, scale)
     transform.skew(corrected_shear_angle, 0.0)
-    output_shape = (int(image.shape[0] / scale), image.shape[1]) if scale < 1.0 else None
+    output_shape = (int(image.shape[0] / scale), image.shape[1])
     corrected_image = skimage.transform.warp(image, transform.get_matrix(), order=3, output_shape=output_shape)
     return corrected_image
 
