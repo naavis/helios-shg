@@ -79,8 +79,8 @@ def geometric_correction(image: np.ndarray) -> np.ndarray:
     # Shearing with skimage contains a bug, so using matplotlib instead:
     # https://github.com/scikit-image/scikit-image/issues/3239
 
-    # Shearing the image changes the scale a bit, making the scale correction a bit off.
-    # It is so insignificant that we don't care about it here, though.
+    # Correcting for shearing changes the scale a bit, making the scale correction a bit off.
+    # It is so insignificant (on the order of half a pixel or less) that we don't care about it here, though.
     transform = matplotlib.transforms.Affine2D()
     transform.scale(1, scale)
     transform.skew(corrected_shear_angle, 0.0)
