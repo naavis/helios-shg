@@ -11,7 +11,7 @@ from numba import njit
 
 def geometric_correction(image: np.ndarray) -> np.ndarray:
     xc, yc, a, b, theta = fit_ellipse(image)
-    click.echo(f'Found ellipse at ({xc:.2f}, {yc:.2f}), '
+    click.echo(f'Found sun ellipse at ({xc:.2f}, {yc:.2f}), with '
                f'a: {a:.2f}, b: {b:.2f} and rotation {np.rad2deg(theta):.2f}°')
     shear_angle = rot_to_shear(a, b, theta)
     # The shear angle needs some manipulation to be in the correct
