@@ -27,7 +27,7 @@ def fit_poly_to_dark_line(data: np.ndarray) -> Polynomial:
     x = np.arange(first_index, last_index)
     y = np.argmin(data[:, first_index:last_index], axis=0)
     poly = Polynomial.fit(x, y, 2)
-    print(f"Distortion coefficients: {poly.coef}")
+    print(f"Absorption line distortion coefficients: {poly.coef}")
     return poly
 
 
@@ -63,7 +63,7 @@ def geometric_correction(image: np.ndarray) -> np.ndarray:
     xc, yc, a, b, theta = fit_ellipse(image)
     shear_angle = rot_to_shear(a, b, theta)
     corrected_shear_angle = np.pi / 2 - shear_angle
-    print(f'Tilt: {np.rad2deg(corrected_shear_angle)} degrees')
+    print(f'Tilt: {np.rad2deg(corrected_shear_angle):.2f} degrees')
 
     # This is a bit of a hack to determine whether to squish or stretch the image,
     # i.e. whether the horizontal or vertical axis of the ellipse is the longer one
@@ -71,7 +71,7 @@ def geometric_correction(image: np.ndarray) -> np.ndarray:
         scale = a / b
     else:
         scale = b / a
-    print(f'Scale: {scale}')
+    print(f'Scale: {scale:.2f}')
 
     # Shearing with skimage contains a bug, so using matplotlib instead:
     # https://github.com/scikit-image/scikit-image/issues/3239
@@ -109,7 +109,7 @@ def fit_ellipse(image: np.ndarray) -> tuple:
         raise Exception("Could not fit ellipse to image")
     xc, yc, a, b, theta = ellipse.params
     a, b, theta = correct_ellipse_model_params(a, b, theta)
-    print(f'Found ellipse at: ({xc}, {yc}) with a: {a}, b: {b} and rotation {np.rad2deg(theta)}°')
+    print(f'Found ellipse at: ({xc:.2f}, {yc:.2f}) with a: {a:.2f}, b: {b:.2f} and rotation {np.rad2deg(theta):.2f}°')
 
     # plot_ellipse_on_image(image, xc, yc, a, b, theta)
 
