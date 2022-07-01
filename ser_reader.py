@@ -65,8 +65,8 @@ class SerFile:
             .dtype('uint16' if self.bytes_per_pixel == 2 else 'uint8')\
             .newbyteorder('<' if self.little_endian else '>')
         raw_bytes = self._file_mmap.read(bytes_per_frame)
-        raw_data = np.frombuffer(raw_bytes, data_type)
-        return raw_data.reshape((self.height, self.width))
+        image_1d = np.frombuffer(raw_bytes, data_type)
+        return image_1d.reshape((self.height, self.width))
 
     def _get_bytes_per_pixel(self):
         if self.header['ColorId'] <= 19:
