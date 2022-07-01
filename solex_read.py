@@ -33,11 +33,12 @@ def process_video(filename: str) -> np.ndarray:
 
 
 @click.command()
-@click.option('--save', is_flag=True, default=False)
-@click.option('--no-show', is_flag=True, default=False)
-@click.option('--no-crop', is_flag=True, default=False)
+@click.option('--save', is_flag=True, default=False, help='Save image to PNG file')
+@click.option('--no-show', is_flag=True, default=False, help='Do not show image after processing')
+@click.option('--no-crop', is_flag=True, default=False, help='Do not do automatic cropping')
 @click.argument('files', nargs=-1)
 def solex_read(files, save, no_show, no_crop):
+    """Processes Sol'Ex spectroheliograph videos into narrowband still images."""
     if os.name == 'nt':
         # Windows does not automatically expand wildcards, so that has to be done with the glob module.
         # Note that technically Windows allows square brackets in filenames, so this solution
