@@ -15,7 +15,7 @@ from solex.processor import process_video
 @click.option('--no-show', is_flag=True, default=False, help='Do not show image after processing.')
 @click.option('--no-crop', is_flag=True, default=False, help='Do not do automatic cropping. Overrides --output-size.')
 @click.option('--output-size', type=int, help='Desired image side length in pixels. Handy for matching the size of '
-                                              'several images!')
+                                              'several images for stacking!')
 @click.option('--ref-frame', type=int, help='Reference frame for finding absorption line, defaults to middle frame')
 @click.option('--flipv', is_flag=True, help='Flip result vertically.')
 @click.option('--fliph', is_flag=True, help='Flip result horizontally.')
