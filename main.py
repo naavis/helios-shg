@@ -73,7 +73,7 @@ def geometric_correction(image: np.ndarray) -> np.ndarray:
 
 
 @njit(cache=True)
-def rot_to_shear(a: float, b: float, theta: float):
+def rot_to_shear(a: float, b: float, theta: float) -> float:
     # Stolen from here: https://math.stackexchange.com/a/2510239
     slope = (a * a * np.tan(theta) + b * b / np.tan(theta)) / (a * a - b * b)
     return np.arctan(slope)
