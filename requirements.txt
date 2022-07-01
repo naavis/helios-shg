@@ -3,4 +3,3 @@ numpy==1.22.0
 scikit-image==0.19.3
 numba==0.55.2
 imageio==2.19.3
-scipy==1.8.1
