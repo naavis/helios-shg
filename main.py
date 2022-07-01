@@ -65,12 +65,6 @@ def geometric_correction(image: np.ndarray) -> np.ndarray:
     corrected_shear_angle = np.pi / 2 - shear_angle
     print(f'Tilt: {np.rad2deg(corrected_shear_angle)} degrees')
 
-    # Shearing with skimage contains a bug, so using matplotlib instead:
-    # https://github.com/scikit-image/scikit-image/issues/3239
-
-    # Shearing the image changes the scale a bit, making the scale correction a bit off.
-    # It is so insignificant that we don't care about it here, though.
-
     # This is a bit of a hack to determine whether to squish or stretch the image,
     # i.e. whether the horizontal or vertical axis of the ellipse is the longer one
     if np.abs(theta - np.pi / 2) < np.pi / 4:
@@ -79,6 +73,11 @@ def geometric_correction(image: np.ndarray) -> np.ndarray:
         scale = b / a
     print(f'Scale: {scale}')
 
+    # Shearing with skimage contains a bug, so using matplotlib instead:
+    # https://github.com/scikit-image/scikit-image/issues/3239
+
+    # Shearing the image changes the scale a bit, making the scale correction a bit off.
+    # It is so insignificant that we don't care about it here, though.
     transform = matplotlib.transforms.Affine2D()
     transform.scale(1, scale)
     transform.skew(corrected_shear_angle, 0.0)
