@@ -1,3 +1,4 @@
+import click
 import matplotlib.transforms
 import numpy as np
 import skimage.draw
@@ -10,13 +11,13 @@ from numba import njit
 
 def geometric_correction(image: np.ndarray) -> np.ndarray:
     xc, yc, a, b, theta = fit_ellipse(image)
-    print(f'Found ellipse at: ({xc:.2f}, {yc:.2f}) with a: {a:.2f}, b: {b:.2f} and rotation {np.rad2deg(theta):.2f}°')
+    click.echo(f'Found ellipse at: ({xc:.2f}, {yc:.2f}) with a: {a:.2f}, b: {b:.2f} and rotation {np.rad2deg(theta):.2f}°')
     shear_angle = rot_to_shear(a, b, theta)
     # The shear angle needs some manipulation to be in the correct
     # range for our purposes. This ensures it is always centered
     # around 0 degrees with solar scans, and not -90 or 90 degrees.
     corrected_shear_angle = -(shear_angle + np.pi / 2 if shear_angle < 0 else shear_angle - np.pi / 2)
-    print(f'Tilt: {np.rad2deg(corrected_shear_angle):.2f} degrees')
+    click.echo(f'Tilt: {np.rad2deg(corrected_shear_angle):.2f} degrees')
 
     # This is a bit of a hack to determine whether to squish or stretch the image,
     # i.e. whether the horizontal or vertical axis of the ellipse is the longer one
@@ -24,7 +25,7 @@ def geometric_correction(image: np.ndarray) -> np.ndarray:
         scale = a / b
     else:
         scale = b / a
-    print(f'Scale: {scale:.2f}')
+    click.echo(f'Scale: {scale:.2f}')
 
     # Shearing with skimage contains a bug, so using matplotlib instead:
     # https://github.com/scikit-image/scikit-image/issues/3239

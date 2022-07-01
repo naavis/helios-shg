@@ -1,5 +1,9 @@
-import sys
+import glob
+import os
+import pathlib
 
+import click
+import imageio
 import numpy as np
 
 from solex.correction import geometric_correction
@@ -14,7 +18,7 @@ def process_video(filename: str) -> np.ndarray:
 
     # Pick reference frame from middle of video
     ref_frame_index = int(input_file.frame_count / 2)
-    print(f"Using frame {ref_frame_index} as reference")
+    click.echo(f"Using frame {ref_frame_index} as reference")
     ref_frame = input_file.read_frame(ref_frame_index)
 
     # Fit polynomial to dark absorption line in reference frame
@@ -28,10 +32,29 @@ def process_video(filename: str) -> np.ndarray:
     return crop_image(final_output)
 
 
-def main(args: [str]):
-    final_output = process_video(args[0])
-    show_image(final_output)
+@click.command()
+@click.option('--save', is_flag=True, default=False)
+@click.option('--show/--no-show', default=True)
+@click.option('--crop/--no-crop', default=True)
+@click.argument('files', nargs=-1)
+def solex_read(files, save, show, crop):
+    if os.name == 'nt':
+        # Windows does not automatically expand wildcards,
+        # so that has to be done with the glob module
+        files.append([glob.glob(f) for f in files])
+    for f in files:
+        click.echo(f'Processing: {f}')
+        result = process_video(f)
+        if crop:
+            result = crop_image(result)
+        click.echo(f'Result image size: {result.shape[0]}x{result.shape[1]} pixels')
+        if show:
+            show_image(result)
+        if save:
+            new_file_path = pathlib.Path(f).with_suffix('.png')
+            click.echo(f'Saving result to: {new_file_path}')
+            imageio.imwrite(new_file_path, result.astype(np.uint16))
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    solex_read()

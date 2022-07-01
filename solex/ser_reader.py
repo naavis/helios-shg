@@ -1,5 +1,6 @@
 import mmap
 
+import click
 import numpy as np
 
 
@@ -32,9 +33,9 @@ class SerFile:
         return image_1d.reshape((self.height, self.width))
 
     def print_headers(self):
-        print('SER file headers:')
+        click.echo('SER file headers:')
         for header_key in self.header:
-            print(f'\t{header_key}: {self.header[header_key]}')
+            click.echo(f'\t{header_key}: {self.header[header_key]}')
 
     def _read_header(self):
         header = {}

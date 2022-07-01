@@ -1,3 +1,4 @@
+import click
 import numpy as np
 from numba import njit
 from numpy.polynomial.polynomial import Polynomial
@@ -12,7 +13,7 @@ def fit_poly_to_dark_line(image: np.ndarray) -> np.ndarray:
     x = np.arange(first_index, last_index)
     y = np.argmin(image[:, first_index:last_index], axis=0)
     poly = Polynomial.fit(x, y, 2)
-    print(f"Absorption line distortion coefficients: {poly.coef}")
+    click.echo(f"Absorption line distortion coefficients: {poly.coef}")
     _, poly_curve = poly.linspace(image.shape[1], domain=[0, image.shape[1]])
     return poly_curve
 
