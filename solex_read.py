@@ -11,12 +11,14 @@ from solex.processor import process_video
 
 
 @click.command()
-@click.option('--save', is_flag=True, default=False, help='Save image to PNG file')
-@click.option('--no-show', is_flag=True, default=False, help='Do not show image after processing')
-@click.option('--no-crop', is_flag=True, default=False, help='Do not do automatic cropping')
+@click.option('--save', is_flag=True, default=False, help='Save image to PNG file.')
+@click.option('--no-show', is_flag=True, default=False, help='Do not show image after processing.')
+@click.option('--no-crop', is_flag=True, default=False, help='Do not do automatic cropping. Overrides --output-size.')
+@click.option('--output-size', type=int, help='Desired image side length in pixels. Handy for matching the size of '
+                                              'several images!')
 @click.option('--ref-frame', type=int, help='Reference frame for finding absorption line, defaults to middle frame')
 @click.argument('files', nargs=-1)
-def solex_read(files, save, no_show, no_crop, ref_frame):
+def solex_read(files, save, no_show, no_crop, ref_frame, output_size):
     """Processes Sol'Ex spectroheliograph videos into narrowband still images."""
     if os.name == 'nt':
         # Windows does not automatically expand wildcards, so that has to be done with the glob module.
@@ -27,7 +29,7 @@ def solex_read(files, save, no_show, no_crop, ref_frame):
         click.echo(f'Processing: {f}')
         result = process_video(f, ref_frame)
         if not no_crop:
-            result = crop_image(result)
+            result = crop_image(result, output_size)
         click.echo(f'Result image size: {result.shape[0]}x{result.shape[1]} pixels')
         if save:
             new_file_path = pathlib.Path(f).with_suffix('.png')
