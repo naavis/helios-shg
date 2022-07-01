@@ -41,6 +41,7 @@ def solex_read(files, save, show, crop):
     if os.name == 'nt':
         # Windows does not automatically expand wildcards,
         # so that has to be done with the glob module
+        # TODO: The globbing does not work perfectly, as it leaves the wildcard paths in the list
         files.append([glob.glob(f) for f in files])
     for f in files:
         click.echo(f'Processing: {f}')
