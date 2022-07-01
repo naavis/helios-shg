@@ -120,8 +120,7 @@ def correct_ellipse_model_params(a: float, b: float, theta: float) -> tuple:
 
 def process_video(filename: str) -> np.ndarray:
     input_file = SerFile(filename)
-    ser_header = input_file.header
-    print_headers(ser_header)
+    print_headers(input_file.header)
     # Pick reference frame from middle of video
     ref_frame_index = int(input_file.frame_count / 2)
     print(f"Using frame {ref_frame_index} as reference")
