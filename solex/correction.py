@@ -10,6 +10,7 @@ from numba import njit
 
 def geometric_correction(image: np.ndarray) -> np.ndarray:
     xc, yc, a, b, theta = fit_ellipse(image)
+    print(f'Found ellipse at: ({xc:.2f}, {yc:.2f}) with a: {a:.2f}, b: {b:.2f} and rotation {np.rad2deg(theta):.2f}°')
     shear_angle = rot_to_shear(a, b, theta)
     # The shear angle needs some manipulation to be in the correct
     # range for our purposes. This ensures it is always centered
@@ -61,7 +62,6 @@ def fit_ellipse(image: np.ndarray) -> tuple:
         raise RuntimeError("Could not fit ellipse to image")
     xc, yc, a, b, theta = ellipse.params
     a, b, theta = correct_ellipse_model_params(a, b, theta)
-    print(f'Found ellipse at: ({xc:.2f}, {yc:.2f}) with a: {a:.2f}, b: {b:.2f} and rotation {np.rad2deg(theta):.2f}°')
 
     return xc, yc, a, b, theta
 
