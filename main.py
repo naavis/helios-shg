@@ -12,12 +12,6 @@ from numpy.polynomial import Polynomial
 from numba import njit
 
 
-def print_headers(header: dict):
-    print('SER file headers:')
-    for header_key in header:
-        print(f'\t{header_key}: {header[header_key]}')
-
-
 def fit_poly_to_dark_line(data: np.ndarray) -> Polynomial:
     # Limit polynomial fitting only to region with proper signal
     columns_with_signal = data.max(axis=0) > (0.3 * data.max())
@@ -120,7 +114,7 @@ def correct_ellipse_model_params(a: float, b: float, theta: float) -> tuple:
 
 def process_video(filename: str) -> np.ndarray:
     input_file = SerFile(filename)
-    print_headers(input_file.header)
+    input_file.print_headers()
     # Pick reference frame from middle of video
     ref_frame_index = int(input_file.frame_count / 2)
     print(f"Using frame {ref_frame_index} as reference")

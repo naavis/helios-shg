@@ -30,6 +30,11 @@ class SerFile:
         image_1d = np.frombuffer(raw_bytes, data_type)
         return image_1d.reshape((self.height, self.width))
 
+    def print_headers(self):
+        print('SER file headers:')
+        for header_key in self.header:
+            print(f'\t{header_key}: {self.header[header_key]}')
+
     def _read_header(self):
         header = {}
         offset = 0
