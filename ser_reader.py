@@ -4,15 +4,15 @@ import numpy as np
 
 class SerFile:
     def __init__(self, file_path):
-        self.file_path = file_path
-        self._file_handle = open(self.file_path, 'rb')
+        self._file_handle = open(file_path, 'rb')
         self._file_mmap = mmap.mmap(self._file_handle.fileno(), 0, access=mmap.ACCESS_READ)
+
         self.header = self._read_header()
         self.width = self.header['Width']
         self.height = self.header['Height']
         self.frame_count = self.header['FrameCount']
-        self.little_endian = self.header['LittleEndian'] == 0
         self.bytes_per_pixel = self._get_bytes_per_pixel()
+        self._little_endian = self.header['LittleEndian'] == 0
 
     def __del__(self):
         self._file_mmap.close()
@@ -25,7 +25,7 @@ class SerFile:
 
         data_type = np \
             .dtype('uint16' if self.bytes_per_pixel == 2 else 'uint8') \
-            .newbyteorder('<' if self.little_endian else '>')
+            .newbyteorder('<' if self._little_endian else '>')
         raw_bytes = self._file_mmap.read(bytes_per_frame)
         image_1d = np.frombuffer(raw_bytes, data_type)
         return image_1d.reshape((self.height, self.width))
