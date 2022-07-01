@@ -39,10 +39,10 @@ def process_video(filename: str) -> np.ndarray:
 @click.argument('files', nargs=-1)
 def solex_read(files, save, show, crop):
     if os.name == 'nt':
-        # Windows does not automatically expand wildcards,
-        # so that has to be done with the glob module
-        # TODO: The globbing does not work perfectly, as it leaves the wildcard paths in the list
-        files.append([glob.glob(f) for f in files])
+        # Windows does not automatically expand wildcards, so that has to be done with the glob module.
+        # Note that technically Windows allows square brackets in filenames, so this solution
+        # is not perfect. They will be interpreted as wildcard characters in this case.
+        files = [glob.glob(f) if any(c in f for c in ['*', '?', '[', ']']) else f for f in files]
     for f in files:
         click.echo(f'Processing: {f}')
         result = process_video(f)
