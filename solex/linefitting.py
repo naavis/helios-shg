@@ -3,17 +3,18 @@ from numba import njit
 from numpy.polynomial.polynomial import Polynomial
 
 
-def fit_poly_to_dark_line(data: np.ndarray) -> Polynomial:
+def fit_poly_to_dark_line(image: np.ndarray) -> np.ndarray:
     # Limit polynomial fitting only to region with proper signal
-    columns_with_signal = data.max(axis=0) > (0.3 * data.max())
+    columns_with_signal = image.max(axis=0) > (0.3 * image.max())
     first_index = np.nonzero(columns_with_signal)[0][0]
     last_index = np.nonzero(columns_with_signal)[0][-1]
 
     x = np.arange(first_index, last_index)
-    y = np.argmin(data[:, first_index:last_index], axis=0)
+    y = np.argmin(image[:, first_index:last_index], axis=0)
     poly = Polynomial.fit(x, y, 2)
     print(f"Absorption line distortion coefficients: {poly.coef}")
-    return poly
+    _, poly_curve = poly.linspace(image.shape[1], domain=[0, image.shape[1]])
+    return poly_curve
 
 
 @njit(cache=True)
