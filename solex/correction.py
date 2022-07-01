@@ -11,13 +11,17 @@ from numba import njit
 
 def geometric_correction(image: np.ndarray) -> np.ndarray:
     xc, yc, a, b, theta = fit_ellipse(image)
-    click.echo(f'Found ellipse at: ({xc:.2f}, {yc:.2f}) with a: {a:.2f}, b: {b:.2f} and rotation {np.rad2deg(theta):.2f}°')
+    click.echo(f'Found ellipse at ({xc:.2f}, {yc:.2f}), '
+               f'a: {a:.2f}, b: {b:.2f} and rotation {np.rad2deg(theta):.2f}°')
     shear_angle = rot_to_shear(a, b, theta)
     # The shear angle needs some manipulation to be in the correct
     # range for our purposes. This ensures it is always centered
     # around 0 degrees with solar scans, and not -90 or 90 degrees.
     corrected_shear_angle = -(shear_angle + np.pi / 2 if shear_angle < 0 else shear_angle - np.pi / 2)
     click.echo(f'Tilt: {np.rad2deg(corrected_shear_angle):.2f} degrees')
+    if np.abs(np.rad2deg(corrected_shear_angle)) > 4.0:
+        click.secho('Significant tilt detected! '
+                    'Consider aligning your instrument or mount better.', fg='red', bold=True)
 
     # This is a bit of a hack to determine whether to squish or stretch the image,
     # i.e. whether the horizontal or vertical axis of the ellipse is the longer one
@@ -26,6 +30,10 @@ def geometric_correction(image: np.ndarray) -> np.ndarray:
     else:
         scale = b / a
     click.echo(f'Scale: {scale:.2f}')
+
+    if scale < 1.0:
+        click.secho('Data has insufficient number of frames compared to resolution! '
+                    'Consider using a slower scan speed or increasing frame rate.', fg='red', bold=True)
 
     # Shearing with skimage contains a bug, so using matplotlib instead:
     # https://github.com/scikit-image/scikit-image/issues/3239

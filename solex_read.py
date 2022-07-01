@@ -56,6 +56,7 @@ def solex_read(files, save, no_show, no_crop):
             imageio.imwrite(new_file_path, result.astype(np.uint16))
         if not no_show:
             show_image(result)
+        click.echo('')
 
 
 if __name__ == '__main__':
