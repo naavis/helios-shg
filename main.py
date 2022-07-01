@@ -95,6 +95,12 @@ def fit_ellipse(image: np.ndarray) -> tuple:
     edges = skimage.feature.canny(image > 0.1 * image.max())
     edge_points = np.fliplr(np.argwhere(edges))
 
+    # The condition below ensures that there are a sane number
+    # of points on the ellipse. Scikit-image's EllipseModel
+    # seems to get confused with long scans and lots of points
+    if edge_points.shape[0] > 1000:
+        edge_points = edge_points[::int(np.ceil(edge_points.shape[0] / 1000)), :]
+
     # plot_edge_points_on_image(image, edge_points)
 
     ellipse = skimage.measure.EllipseModel()
