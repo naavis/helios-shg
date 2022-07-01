@@ -19,7 +19,7 @@ def geometric_correction(image: np.ndarray) -> np.ndarray:
     # around 0 degrees with solar scans, and not -90 or 90 degrees.
     corrected_shear_angle = -(shear_angle + np.pi / 2 if shear_angle < 0 else shear_angle - np.pi / 2)
     click.echo(f'Tilt: {np.rad2deg(corrected_shear_angle):.2f} degrees')
-    if np.abs(np.rad2deg(corrected_shear_angle)) > 4.0:
+    if np.abs(np.rad2deg(corrected_shear_angle)) > 5.0:
         click.secho('Significant tilt detected! '
                     'Consider aligning your instrument or mount better.', fg='red', bold=True)
 
