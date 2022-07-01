@@ -86,7 +86,7 @@ def fit_ellipse(image: np.ndarray) -> tuple:
     ellipse = skimage.measure.EllipseModel()
     estimation_successful = ellipse.estimate(edge_points)
     if not estimation_successful:
-        raise Exception("Could not fit ellipse to image")
+        raise RuntimeError("Could not fit ellipse to image")
     xc, yc, a, b, theta = ellipse.params
     a, b, theta = correct_ellipse_model_params(a, b, theta)
     print(f'Found ellipse at: ({xc:.2f}, {yc:.2f}) with a: {a:.2f}, b: {b:.2f} and rotation {np.rad2deg(theta):.2f}°')
