@@ -1,6 +1,7 @@
 import click
 import matplotlib.transforms
 import numpy as np
+import scipy
 import skimage.draw
 import skimage.feature
 import skimage.measure
@@ -91,3 +92,16 @@ def correct_ellipse_model_params(a: float, b: float, theta: float) -> tuple:
             return a, b, np.pi + theta
         else:
             return a, b, theta
+
+
+def extract_transversallium(image: np.ndarray) -> np.ndarray:
+    masked_image = np.ma.masked_less(image, 0.2 * image.max())
+    median = np.ma.median(masked_image, axis=0)
+    smooth_median = scipy.signal.medfilt(median, 201)
+    highpass_median = median / smooth_median
+    correction_factors = np.ma.filled(highpass_median, 1.0)
+    return correction_factors
+
+
+def transversallium_correction(image: np.ndarray, transversallium_factors: np.ndarray) -> np.ndarray:
+    return image / transversallium_factors
