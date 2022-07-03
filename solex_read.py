@@ -21,8 +21,10 @@ from solex.utils import show_image, crop_image
 @click.option('--flipv', is_flag=True, help='Flip result vertically.')
 @click.option('--fliph', is_flag=True, help='Flip result horizontally.')
 @click.option('--no-transversallium', is_flag=True, default=False, help='Do not apply transversallium correction.')
+@click.option('--continuum-offset', type=int, default=10, help='Offset in pixels from absorption line used to measure '
+                                                               'continuum signal for transversallium correction.')
 @click.argument('files', nargs=-1)
-def solex_read(files, save, no_show, no_crop, ref_frame, output_size, flipv, fliph, no_transversallium):
+def solex_read(files, save, no_show, no_crop, ref_frame, output_size, flipv, fliph, no_transversallium, continuum_offset):
     """Processes Sol'Ex spectroheliograph videos into narrowband still images."""
     # Windows does not automatically expand wildcards, so that has to be done with the glob module.
     # Note that technically Windows allows square brackets in filenames, so this solution
@@ -32,7 +34,7 @@ def solex_read(files, save, no_show, no_crop, ref_frame, output_size, flipv, fli
         files = list(flatten(files))
     for f in files:
         click.echo(f'Processing: {f}')
-        result = process_video(f, ref_frame, not no_transversallium)
+        result = process_video(f, ref_frame, not no_transversallium, continuum_offset)
         if not no_crop:
             result = crop_image(result, output_size)
         click.echo(f'Result image size: {result.shape[0]}x{result.shape[1]} pixels')

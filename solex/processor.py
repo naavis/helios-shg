@@ -6,7 +6,7 @@ from solex.linefitting import fit_poly_to_dark_line, get_absorption_line
 from solex.ser_reader import SerFile
 
 
-def process_video(filename: str, ref_frame_index: int = None, apply_transversallium_correction: bool = True) -> np.ndarray:
+def process_video(filename: str, ref_frame_index: int, apply_transversallium_correction: bool, continuum_offset: int) -> np.ndarray:
     input_file = SerFile(filename)
     input_file.print_headers()
 
@@ -26,7 +26,7 @@ def process_video(filename: str, ref_frame_index: int = None, apply_transversall
         image = input_file.read_frame(i)
         output_frame[i, :] = get_absorption_line(image, poly_curve)
         if apply_transversallium_correction:
-            continuum_frame[i, :] = get_absorption_line(image, 10 + poly_curve)
+            continuum_frame[i, :] = get_absorption_line(image, continuum_offset + poly_curve)
 
     if apply_transversallium_correction:
         transversallium = extract_transversallium(continuum_frame)
