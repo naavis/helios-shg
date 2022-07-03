@@ -1,13 +1,14 @@
 import glob
 import os
 import pathlib
+from collections.abc import Iterable
 
 import click
 import imageio
 import numpy as np
 
-from solex.utils import show_image, crop_image
 from solex.processor import process_video
+from solex.utils import show_image, crop_image
 
 
 @click.command()
@@ -22,11 +23,12 @@ from solex.processor import process_video
 @click.argument('files', nargs=-1)
 def solex_read(files, save, no_show, no_crop, ref_frame, output_size, flipv, fliph):
     """Processes Sol'Ex spectroheliograph videos into narrowband still images."""
+    # Windows does not automatically expand wildcards, so that has to be done with the glob module.
+    # Note that technically Windows allows square brackets in filenames, so this solution
+    # is not perfect. They will be interpreted as wildcard characters in this case.
     if os.name == 'nt':
-        # Windows does not automatically expand wildcards, so that has to be done with the glob module.
-        # Note that technically Windows allows square brackets in filenames, so this solution
-        # is not perfect. They will be interpreted as wildcard characters in this case.
         files = [glob.glob(f) if any(c in f for c in ['*', '?', '[', ']']) else f for f in files]
+        files = list(flatten(files))
     for f in files:
         click.echo(f'Processing: {f}')
         result = process_video(f, ref_frame)
@@ -44,6 +46,14 @@ def solex_read(files, save, no_show, no_crop, ref_frame, output_size, flipv, fli
         if not no_show:
             show_image(result)
         click.echo('')
+
+
+def flatten(xs):
+    for x in xs:
+        if isinstance(x, Iterable) and not isinstance(x, (str, bytes)):
+            yield from flatten(x)
+        else:
+            yield x
 
 
 if __name__ == '__main__':
