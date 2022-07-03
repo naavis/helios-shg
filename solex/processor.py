@@ -1,5 +1,4 @@
 import click
-import matplotlib.pyplot as plt
 import numpy as np
 
 from solex.correction import geometric_correction, extract_transversallium, transversallium_correction
