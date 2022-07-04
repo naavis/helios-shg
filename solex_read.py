@@ -21,7 +21,7 @@ from solex.utils import show_image, crop_image
 @click.option('--flipv', is_flag=True, help='Flip result vertically.')
 @click.option('--fliph', is_flag=True, help='Flip result horizontally.')
 @click.option('--no-transversallium', is_flag=True, default=False, help='Do not apply transversallium correction.')
-@click.option('--continuum-offset', type=int, default=10, help='Offset in pixels from absorption line used to measure '
+@click.option('--continuum-offset', type=int, default=15, help='Offset in pixels from absorption line used to measure '
                                                                'continuum signal for transversallium correction.')
 @click.argument('files', nargs=-1)
 def solex_read(files,
