@@ -25,7 +25,11 @@ from solex.utils import show_image, crop_image
                                                                'continuum signal for transversallium correction.')
 @click.argument('files', nargs=-1)
 def solex_read(files, save, no_show, no_crop, ref_frame, output_size, flipv, fliph, no_transversallium, continuum_offset):
-    """Processes Sol'Ex spectroheliograph videos into narrowband still images."""
+    """
+    Processes Sol'Ex spectroheliograph videos into narrowband still images.
+
+    FILES must be one or more SER raw video files.
+    """
     # Windows does not automatically expand wildcards, so that has to be done with the glob module.
     # Note that technically Windows allows square brackets in filenames, so this solution
     # is not perfect. They will be interpreted as wildcard characters in this case.
