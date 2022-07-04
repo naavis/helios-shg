@@ -18,7 +18,7 @@ def geometric_correction(image: np.ndarray) -> (np.ndarray, (float, float), floa
     # The shear angle needs some manipulation to be in the correct
     # range for our purposes. This ensures it is always centered
     # around 0 degrees with solar scans, and not -90 or 90 degrees.
-    corrected_shear_angle = -(shear_angle + np.pi / 2 if shear_angle < 0 else shear_angle - np.pi / 2)
+    corrected_shear_angle = shear_angle + np.pi / 2 if shear_angle < 0 else shear_angle - np.pi / 2
     click.echo(f'Tilt: {np.rad2deg(corrected_shear_angle):.2f} degrees')
     if np.abs(np.rad2deg(corrected_shear_angle)) > 5.0:
         click.secho('Significant tilt detected! '
@@ -42,20 +42,22 @@ def geometric_correction(image: np.ndarray) -> (np.ndarray, (float, float), floa
     # Correcting for shearing changes the scale a bit, making the scale correction a bit off.
     # It is so insignificant (on the order of half a pixel or less) that we don't care about it here, though.
 
-    inv_transform = matplotlib.transforms.Affine2D()
-    inv_transform.scale(1, scale)
-    inv_transform.skew(corrected_shear_angle, 0.0)
-    inv_matrix = inv_transform.get_matrix()
+    transform = matplotlib.transforms.Affine2D()
+    transform.skew(corrected_shear_angle, 0.0)
+    transform.scale(1, 1.0 / scale)
+    transform_matrix = transform.get_matrix()
 
-    output_shape = (int(image.shape[0] / scale), image.shape[1])
-    corrected_image = skimage.transform.warp(image, inv_matrix, order=3, output_shape=output_shape)
-
-    transform_matrix = np.linalg.inv(inv_matrix)
-    new_xc, new_yc, _ = np.dot(transform_matrix, np.array([xc, yc, 1.0]))
+    # Calculate center and diameter after geometry correction
+    new_xc, new_yc = np.dot(transform_matrix[:2, :2], np.array([xc, yc]))
     if scale < 1.0:
         diameter = 2 * a
     else:
         diameter = 2 * b
+
+    output_shape = (int(image.shape[0] / scale), image.shape[1])
+    inv_matrix = np.linalg.inv(transform_matrix)
+    corrected_image = skimage.transform.warp(image, inv_matrix, order=3, output_shape=output_shape)
+
     return corrected_image, (new_xc, new_yc), diameter
 
 
