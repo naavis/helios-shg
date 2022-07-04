@@ -35,7 +35,7 @@ def solex_read(files,
                no_transversallium,
                continuum_offset):
     """
-    Processes Sol'Ex spectroheliograph videos into narrowband still images.
+    Processes spectroheliograph scans into narrowband still images.
 
     FILES must be one or more SER raw video files.
     """
