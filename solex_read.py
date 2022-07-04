@@ -47,9 +47,9 @@ def solex_read(files,
         files = list(flatten(files))
     for f in files:
         click.echo(f'Processing: {click.format_filename(f)}')
-        result = process_video(f, ref_frame, not no_transversallium, continuum_offset)
+        result, (xc, yc), diameter = process_video(f, ref_frame, not no_transversallium, continuum_offset)
         if not no_crop:
-            result = crop_image(result, output_size)
+            result = crop_image(result, output_size, xc, yc, diameter)
         click.echo(f'Result image size: {result.shape[0]}x{result.shape[1]} pixels')
         if save:
             new_file_path = pathlib.Path(f).with_suffix('.png')

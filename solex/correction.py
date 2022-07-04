@@ -10,7 +10,7 @@ import skimage.transform
 from numba import njit
 
 
-def geometric_correction(image: np.ndarray) -> np.ndarray:
+def geometric_correction(image: np.ndarray) -> (np.ndarray, (float, float), float):
     xc, yc, a, b, theta = fit_ellipse(image)
     click.echo(f'Found sun ellipse at ({xc:.2f}, {yc:.2f}), with '
                f'a: {a:.2f}, b: {b:.2f} and rotation {np.rad2deg(theta):.2f}°')
@@ -41,12 +41,22 @@ def geometric_correction(image: np.ndarray) -> np.ndarray:
 
     # Correcting for shearing changes the scale a bit, making the scale correction a bit off.
     # It is so insignificant (on the order of half a pixel or less) that we don't care about it here, though.
-    transform = matplotlib.transforms.Affine2D()
-    transform.scale(1, scale)
-    transform.skew(corrected_shear_angle, 0.0)
+
+    inv_transform = matplotlib.transforms.Affine2D()
+    inv_transform.scale(1, scale)
+    inv_transform.skew(corrected_shear_angle, 0.0)
+    inv_matrix = inv_transform.get_matrix()
+
     output_shape = (int(image.shape[0] / scale), image.shape[1])
-    corrected_image = skimage.transform.warp(image, transform.get_matrix(), order=3, output_shape=output_shape)
-    return corrected_image
+    corrected_image = skimage.transform.warp(image, inv_matrix, order=3, output_shape=output_shape)
+
+    transform_matrix = np.linalg.inv(inv_matrix)
+    new_xc, new_yc, _ = np.dot(transform_matrix, np.array([xc, yc, 1.0]))
+    if scale < 1.0:
+        diameter = 2 * a
+    else:
+        diameter = 2 * b
+    return corrected_image, (new_xc, new_yc), diameter
 
 
 @njit(cache=True)

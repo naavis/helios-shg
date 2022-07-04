@@ -1,18 +1,15 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from solex.correction import fit_ellipse
-
 
 def show_image(image: np.ndarray):
     plt.imshow(image, cmap='gray', vmin=0.0)
     plt.show()
 
 
-def crop_image(image: np.ndarray, desired_side_length: int = None) -> np.ndarray:
-    xc, yc, a, b, theta = fit_ellipse(image)
+def crop_image(image: np.ndarray, desired_side_length: int, xc: float, yc: float, diameter: float) -> np.ndarray:
     if desired_side_length is None:
-        desired_side_length = int(max(a, b) * 2 * 1.2)
+        desired_side_length = int(diameter * 1.2)
 
     x_min = int(np.floor(xc - desired_side_length / 2))
     x_max = int(np.ceil(xc + desired_side_length / 2))
