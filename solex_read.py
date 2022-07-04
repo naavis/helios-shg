@@ -46,14 +46,14 @@ def solex_read(files,
         files = [glob.glob(f) if any(c in f for c in ['*', '?', '[', ']']) else f for f in files]
         files = list(flatten(files))
     for f in files:
-        click.echo(f'Processing: {f}')
+        click.echo(f'Processing: {click.format_filename(f)}')
         result = process_video(f, ref_frame, not no_transversallium, continuum_offset)
         if not no_crop:
             result = crop_image(result, output_size)
         click.echo(f'Result image size: {result.shape[0]}x{result.shape[1]} pixels')
         if save:
             new_file_path = pathlib.Path(f).with_suffix('.png')
-            click.echo(f'Saving result to: {new_file_path}')
+            click.echo(f'Saving result to: {click.format_filename(new_file_path)}')
             imageio.imwrite(new_file_path, result.astype(np.uint16))
         if flipv:
             result = np.flipud(result)
