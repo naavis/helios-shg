@@ -24,7 +24,16 @@ from solex.utils import show_image, crop_image
 @click.option('--continuum-offset', type=int, default=10, help='Offset in pixels from absorption line used to measure '
                                                                'continuum signal for transversallium correction.')
 @click.argument('files', nargs=-1)
-def solex_read(files, save, no_show, no_crop, ref_frame, output_size, flipv, fliph, no_transversallium, continuum_offset):
+def solex_read(files,
+               save,
+               no_show,
+               no_crop,
+               ref_frame,
+               output_size,
+               flipv,
+               fliph,
+               no_transversallium,
+               continuum_offset):
     """
     Processes Sol'Ex spectroheliograph videos into narrowband still images.
 
