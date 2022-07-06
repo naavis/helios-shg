@@ -53,7 +53,7 @@ def solex_read(files,
         click.echo(f'Result image size: {result.shape[0]}x{result.shape[1]} pixels')
         if save:
             new_file_path = pathlib.Path(f).with_suffix('.png')
-            click.echo(f'Saving result to: {click.format_filename(new_file_path)}')
+            click.echo(f'Saving result to: {click.format_filename(str(new_file_path))}')
             imageio.imwrite(new_file_path, result.astype(np.uint16))
         if flipv:
             result = np.flipud(result)
