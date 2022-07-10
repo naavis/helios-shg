@@ -54,7 +54,9 @@ def geometric_correction(image: np.ndarray) -> (np.ndarray, (float, float), floa
     else:
         diameter = 2 * b
 
-    output_shape = (int(image.shape[0] / scale), image.shape[1])
+    output_shape_x = int(image.shape[0] / scale)
+    output_shape_y = int(np.ceil(image.shape[1] + image.shape[0] * np.tan(corrected_shear_angle)))
+    output_shape = (output_shape_x, output_shape_y)
     inv_matrix = np.linalg.inv(transform_matrix)
     corrected_image = skimage.transform.warp(image, inv_matrix, order=3, output_shape=output_shape)
 
