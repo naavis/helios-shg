@@ -53,16 +53,16 @@ def helios(files,
         if not no_crop:
             result = crop_image(result, output_size, xc, yc, diameter)
         click.echo(f'Result image size: {result.shape[0]}x{result.shape[1]} pixels')
-        if save:
-            new_file_path = pathlib.Path(f).with_suffix('.png')
-            click.echo(f'Saving result to: {click.format_filename(str(new_file_path))}')
-            imageio.imwrite(new_file_path, result.astype(np.uint16))
         if flipv:
             result = np.flipud(result)
         if fliph:
             result = np.fliplr(result)
         end_time = time.time()
         click.echo(f'Processed file in {end_time - start_time:.2f} seconds')
+        if save:
+            new_file_path = pathlib.Path(f).with_suffix('.png')
+            click.echo(f'Saving result to: {click.format_filename(str(new_file_path))}')
+            imageio.imwrite(new_file_path, result.astype(np.uint16))
         if not no_show:
             show_image(result)
         click.echo('')
