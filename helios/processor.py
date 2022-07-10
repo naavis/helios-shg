@@ -6,7 +6,10 @@ from helios.linefitting import fit_poly_to_dark_line, get_absorption_line
 from helios.ser_reader import SerFile
 
 
-def process_video(filename: str, ref_frame_index: int, apply_transversallium_correction: bool, continuum_offset: int) -> (np.ndarray, (float, float), float):
+def process_video(filename: str,
+                  ref_frame_index: int,
+                  apply_transversallium_correction: bool,
+                  continuum_offset: int) -> (np.ndarray, (float, float), float):
     input_file = SerFile(filename)
     input_file.print_headers()
 
