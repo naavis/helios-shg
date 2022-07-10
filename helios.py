@@ -1,6 +1,7 @@
 import glob
 import os
 import pathlib
+import time
 from collections.abc import Iterable
 
 import click
@@ -46,7 +47,8 @@ def helios(files,
         files = [glob.glob(f) if any(c in f for c in ['*', '?', '[', ']']) else f for f in files]
         files = list(flatten(files))
     for f in files:
-        click.echo(f'Processing: {click.format_filename(f)}')
+        start_time = time.time()
+        click.echo(f'Started processing: {click.format_filename(f)}')
         result, (xc, yc), diameter = process_video(f, ref_frame, not no_transversallium, continuum_offset)
         if not no_crop:
             result = crop_image(result, output_size, xc, yc, diameter)
@@ -59,6 +61,8 @@ def helios(files,
             result = np.flipud(result)
         if fliph:
             result = np.fliplr(result)
+        end_time = time.time()
+        click.echo(f'Processed file in {end_time - start_time:.2f} seconds')
         if not no_show:
             show_image(result)
         click.echo('')
