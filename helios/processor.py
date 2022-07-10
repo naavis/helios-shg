@@ -1,9 +1,9 @@
 import click
 import numpy as np
 
-from solex.correction import geometric_correction, extract_transversallium, transversallium_correction
-from solex.linefitting import fit_poly_to_dark_line, get_absorption_line
-from solex.ser_reader import SerFile
+from helios.correction import geometric_correction, extract_transversallium, transversallium_correction
+from helios.linefitting import fit_poly_to_dark_line, get_absorption_line
+from helios.ser_reader import SerFile
 
 
 def process_video(filename: str, ref_frame_index: int, apply_transversallium_correction: bool, continuum_offset: int) -> (np.ndarray, (float, float), float):
