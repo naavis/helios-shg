@@ -1,6 +1,6 @@
 # Helios
 
-A tool for processing video scans from spectroheliographs like
+A command line tool for processing video scans from spectroheliographs like
 [Sol'Ex](http://www.astrosurf.com/solex/sol-ex-presentation-en.html).
 
 ## Features
